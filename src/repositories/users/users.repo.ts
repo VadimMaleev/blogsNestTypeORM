@@ -1,85 +1,50 @@
-import { CreateUserDto } from '../../types/dto';
-import { Injectable } from '@nestjs/common';
-import { DataSource } from 'typeorm';
-import { InjectDataSource } from '@nestjs/typeorm';
+import { CreateUserDto } from "../../types/dto";
+import { Injectable } from "@nestjs/common";
+import { DataSource, Repository } from "typeorm";
+import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
+import { User } from "./user.entity";
 
 @Injectable()
 export class UsersRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(User)
+    protected usersRepository: Repository<User>
+  ) {}
 
   async createUser(newUser: CreateUserDto) {
-    await this.dataSource.query(
-      `
-        INSERT INTO public."Users"(
-        "id", "login", "email", "passwordHash", "createdAt", "confirmationCode", "codeExpirationDate", "isConfirmed", "isBanned", "banDate", "banReason")
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-      [
-        newUser.id,
-        newUser.login,
-        newUser.email,
-        newUser.passwordHash,
-        newUser.createdAt,
-        newUser.confirmationCode,
-        newUser.codeExpirationDate,
-        newUser.isConfirmed,
-        newUser.isBanned,
-        newUser.banDate,
-        newUser.banReason,
-      ],
-    );
+    return this.usersRepository.save(newUser);
   }
 
   async deleteUser(id: string): Promise<boolean> {
-    await this.dataSource.query(
-      `
-        DELETE FROM public."Users"
-        WHERE "id" = $1
-        `,
-      [id],
-    );
+    await this.usersRepository.delete({ id: id });
     return true;
   }
 
   async updateConfirmation(id: string) {
-    await this.dataSource.query(
-      `
-        UPDATE public."Users"
-        SET  "isConfirmed" = true
-        WHERE "id" = $1
-        `,
-      [id],
-    );
+    await this.usersRepository.update({ id: id }, { isConfirmed: true });
     return true;
   }
 
   async updateConfirmCode(
     userId: string,
     confirmCode: string,
-    expirationDate: Date,
+    expirationDate: Date
   ) {
-    await this.dataSource.query(
-      `
-        UPDATE public."Users"
-        SET  "confirmationCode" = $1, 
-             "codeExpirationDate" = $2
-        WHERE "id" = $3
-        `,
-      [confirmCode, expirationDate, userId],
+    await this.usersRepository.update(
+      { id: userId },
+      { confirmationCode: confirmCode, codeExpirationDate: expirationDate }
     );
     return true;
   }
 
   async updatePassword(
     newPasswordHash: string,
-    userId: string,
+    userId: string
   ): Promise<boolean> {
-    await this.dataSource.query(
-      `
-        UPDATE public."Users"
-        SET  "passwordHash" = $1, 
-        WHERE "id" = $2
-        `,
-      [newPasswordHash, userId],
+    await this.usersRepository.update(
+      { id: userId },
+      { passwordHash: newPasswordHash }
     );
     return true;
   }
@@ -88,30 +53,16 @@ export class UsersRepository {
     userId: string,
     banStatus: boolean,
     banReason: string | null,
-    banDate: Date | null,
+    banDate: Date | null
   ) {
-    await this.dataSource.query(
-      `
-        UPDATE public."Users"
-        SET "isBanned" = $1,
-            "banReason" = $2,
-            "banDate" = $3 
-        WHERE "id" = $4
-        `,
-      [banStatus, banReason, banDate, userId],
+    await this.usersRepository.update(
+      { id: userId },
+      { isBanned: banStatus, banReason: banReason, banDate: banDate }
     );
     return true;
   }
 
-  async findUserById(id: string) {
-    const user = await this.dataSource.query(
-      `
-    SELECT "id", "login", "email", "passwordHash", "createdAt", "confirmationCode", "codeExpirationDate", "isConfirmed", "isBanned", "banDate", "banReason"
-    FROM public."Users"
-    WHERE "id" = $1
-    `,
-      [id],
-    );
-    return user[0];
+  async findUserById(id: string): Promise<User> {
+    return this.usersRepository.findOneBy({ id: id });
   }
 }

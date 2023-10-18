@@ -1,6 +1,4 @@
-import { BlogDocument } from '../repositories/blogs/blogs.schema';
-
-export const mapBlogsForAdmin = (blog: BlogDocument) => ({
+export const mapBlogsForAdmin = (blog) => ({
   id: blog.id,
   name: blog.name,
   description: blog.description,

@@ -1,23 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import {
-  BannedUserForBlog,
-  BannedUsersForBlogDocument,
-} from './banned.users.for.blog.schema';
-import { Model } from 'mongoose';
-import { BannedUserForBlogDto, LoginQueryDto } from '../../types/dto';
-import { mapBannedUsersForBlog } from '../../helpers/map.banned.users.for.blog';
-import { BannedUsersForBlogResponse } from '../../types/types';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { Injectable } from "@nestjs/common";
+import { BannedUserForBlogDto, LoginQueryDto } from "../../types/dto";
+import { mapBannedUsersForBlog } from "../../helpers/map.banned.users.for.blog";
+import { BannedUsersForBlogResponse } from "../../types/types";
+import { InjectDataSource } from "@nestjs/typeorm";
+import { DataSource } from "typeorm";
 
 @Injectable()
 export class BannedUsersForBlogRepository {
-  constructor(
-    @InjectModel(BannedUserForBlog.name)
-    private bannedUserForBlogModel: Model<BannedUsersForBlogDocument>,
-    @InjectDataSource() protected dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
   async addBannedUser(bannedUser: BannedUserForBlogDto) {
     await this.dataSource.query(
@@ -33,7 +23,7 @@ export class BannedUsersForBlogRepository {
         bannedUser.banDate,
         bannedUser.banReason,
         bannedUser.blogId,
-      ],
+      ]
     );
   }
 
@@ -43,20 +33,20 @@ export class BannedUsersForBlogRepository {
         DELETE FROM public."BannedUsersForBlogs"
         WHERE "userId" = $1
         `,
-      [userId],
+      [userId]
     );
     return true;
   }
 
   async getBannedUsersForBlog(
     blogId: string,
-    query: LoginQueryDto,
+    query: LoginQueryDto
   ): Promise<BannedUsersForBlogResponse> {
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
-    const sortBy: string = query.sortBy || 'banDate';
-    const sortDirection: 'asc' | 'desc' = query.sortDirection || 'desc';
-    const loginSearchTerm: string = query.searchLoginTerm || '';
+    const sortBy: string = query.sortBy || "banDate";
+    const sortDirection: "asc" | "desc" = query.sortDirection || "desc";
+    const loginSearchTerm: string = query.searchLoginTerm || "";
 
     let filter = `"blogId" = '${blogId}'`;
     if (loginSearchTerm) {
@@ -71,7 +61,7 @@ export class BannedUsersForBlogRepository {
         ORDER BY "${sortBy}" ${sortDirection}
         OFFSET $1 LIMIT $2
       `,
-      [(pageNumber - 1) * pageSize, pageSize],
+      [(pageNumber - 1) * pageSize, pageSize]
     );
     const itemsForResponse = items.map(mapBannedUsersForBlog);
 
@@ -81,7 +71,7 @@ export class BannedUsersForBlogRepository {
       FROM public."BannedUsersForBlogs"
       WHERE ${filter}
       `,
-      [blogId],
+      [blogId]
     );
 
     return {
@@ -100,7 +90,7 @@ export class BannedUsersForBlogRepository {
         FROM public."BannedUsersForBlogs"
         WHERE "blogId" = $1 AND "userId" = $2
       `,
-      [blogId, userId],
+      [blogId, userId]
     );
     return user[0];
   }
@@ -112,7 +102,7 @@ export class BannedUsersForBlogRepository {
         FROM public."BannedUsersForBlogs"
         WHERE "userId" = $1
       `,
-      [userId],
+      [userId]
     );
     return user[0];
   }

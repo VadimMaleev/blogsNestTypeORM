@@ -1,18 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { Blog, BlogDocument } from './blogs.schema';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { BlogCreateInputModelType } from '../../types/input.models';
-import { CreateBlogDto } from '../../types/dto';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { Injectable } from "@nestjs/common";
+import { BlogCreateInputModelType } from "../../types/input.models";
+import { CreateBlogDto } from "../../types/dto";
+import { InjectDataSource } from "@nestjs/typeorm";
+import { DataSource } from "typeorm";
 
 @Injectable()
 export class BlogsRepository {
-  constructor(
-    @InjectModel(Blog.name) private blogModel: Model<BlogDocument>,
-    @InjectDataSource() protected dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
   async createBlog(newBlog: CreateBlogDto) {
     await this.dataSource.query(
@@ -32,7 +26,7 @@ export class BlogsRepository {
         // newBlog.login,
         newBlog.isBanned,
         null,
-      ],
+      ]
     );
   }
 
@@ -42,14 +36,14 @@ export class BlogsRepository {
         DELETE FROM public."Blogs"
         WHERE "id" = $1
         `,
-      [id],
+      [id]
     );
     return true;
   }
 
   async updateBlog(
     id: string,
-    inputModel: BlogCreateInputModelType,
+    inputModel: BlogCreateInputModelType
   ): Promise<boolean> {
     await this.dataSource.query(
       `
@@ -59,7 +53,7 @@ export class BlogsRepository {
              "websiteUrl" = $3
         WHERE "id" = $4
         `,
-      [inputModel.name, inputModel.description, inputModel.websiteUrl, id],
+      [inputModel.name, inputModel.description, inputModel.websiteUrl, id]
     );
     return true;
   }
@@ -72,7 +66,7 @@ export class BlogsRepository {
              "login" = $2
         WHERE "id" = $3
         `,
-      [userId, login, blogId],
+      [userId, login, blogId]
     );
     return true;
   }
@@ -80,7 +74,7 @@ export class BlogsRepository {
   async updateBanStatus(
     banStatus: boolean,
     banDate: Date | null,
-    blogId: string,
+    blogId: string
   ) {
     await this.dataSource.query(
       `
@@ -89,7 +83,7 @@ export class BlogsRepository {
              "banDate" = $2
         WHERE "id" = $3
         `,
-      [banStatus, banDate, blogId],
+      [banStatus, banDate, blogId]
     );
     return true;
   }
@@ -101,7 +95,7 @@ export class BlogsRepository {
         FROM public."Blogs"
         WHERE "id" = $1
       `,
-      [id],
+      [id]
     );
     return blog[0];
   }

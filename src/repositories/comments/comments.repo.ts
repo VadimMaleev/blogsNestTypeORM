@@ -1,27 +1,19 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Comment, CommentDocument } from './comments.shema';
-import { Model } from 'mongoose';
-import { CreateCommentDto } from '../../types/dto';
-import { plugForCreatingComment } from '../../helpers/plug.for.creating.posts.and.comments';
-import { Like, LikeDocument } from '../likes/likes.schema';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { Injectable } from "@nestjs/common";
+import { CreateCommentDto } from "../../types/dto";
+import { plugForCreatingComment } from "../../helpers/plug.for.creating.posts.and.comments";
+import { InjectDataSource } from "@nestjs/typeorm";
+import { DataSource } from "typeorm";
 
 @Injectable()
 export class CommentsRepository {
-  constructor(
-    @InjectModel(Comment.name) private commentModel: Model<CommentDocument>,
-    @InjectModel(Like.name) private likesModel: Model<LikeDocument>,
-    @InjectDataSource() protected dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() protected dataSource: DataSource) {}
   async deleteComment(id: string): Promise<boolean> {
     await this.dataSource.query(
       `
       DELETE FROM public."Comments"
       WHERE "id" = $1
       `,
-      [id],
+      [id]
     );
     return true;
   }
@@ -41,7 +33,7 @@ export class CommentsRepository {
         newComment.createdAt,
         newComment.postId,
         newComment.isVisible,
-      ],
+      ]
     );
     return plugForCreatingComment(newComment);
   }
@@ -53,17 +45,17 @@ export class CommentsRepository {
       SET "content" = $1
       WHERE "id" = $2
       `,
-      [content, id],
+      [content, id]
     );
     return true;
   }
 
-  async updateVisibleStatus(userId: string, banStatus: boolean) {
-    await this.commentModel.updateMany(
-      { userId: userId },
-      { isVisible: !banStatus },
-    );
-  }
+  // async updateVisibleStatus(userId: string, banStatus: boolean) {
+  //   await this.commentModel.updateMany(
+  //     { userId: userId },
+  //     { isVisible: !banStatus }
+  //   );
+  // }
 
   async findCommentById(id: string) {
     const comment = await this.dataSource.query(
@@ -72,7 +64,7 @@ export class CommentsRepository {
       FROM public."Comments"
       WHERE "id" = $1
       `,
-      [id],
+      [id]
     );
     return comment[0];
   }

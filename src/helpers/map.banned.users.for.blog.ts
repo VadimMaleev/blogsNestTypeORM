@@ -1,8 +1,4 @@
-import { BannedUsersForBlogDocument } from '../repositories/users/banned.users.for.blog.schema';
-
-export const mapBannedUsersForBlog = (
-  bannedUser: BannedUsersForBlogDocument,
-) => ({
+export const mapBannedUsersForBlog = (bannedUser) => ({
   id: bannedUser.userId,
   login: bannedUser.login,
   banInfo: {

@@ -1,26 +1,20 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { Blog, BlogDocument } from './blogs.schema';
-import { Model } from 'mongoose';
-import { BlogsForResponse, BlogsPaginationResponse } from '../../types/types';
-import { BlogsQueryDto } from '../../types/dto';
-import { Injectable } from '@nestjs/common';
-import { mapBlogsForAdmin } from '../../helpers/map.blogs.for.admin';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { BlogsForResponse, BlogsPaginationResponse } from "../../types/types";
+import { BlogsQueryDto } from "../../types/dto";
+import { Injectable } from "@nestjs/common";
+import { mapBlogsForAdmin } from "../../helpers/map.blogs.for.admin";
+import { InjectDataSource } from "@nestjs/typeorm";
+import { DataSource } from "typeorm";
 
 @Injectable()
 export class BlogsQueryRepository {
-  constructor(
-    @InjectModel(Blog.name) private blogModel: Model<BlogDocument>,
-    @InjectDataSource() protected dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
   async getBlogs(query: BlogsQueryDto): Promise<BlogsPaginationResponse> {
-    const searchNameTerm: string = query.searchNameTerm || '';
+    const searchNameTerm: string = query.searchNameTerm || "";
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
-    const sortBy: string = query.sortBy || 'createdAt';
-    const sortDirection: 'asc' | 'desc' = query.sortDirection || 'desc';
+    const sortBy: string = query.sortBy || "createdAt";
+    const sortDirection: "asc" | "desc" = query.sortDirection || "desc";
 
     let filter = '"isBanned" = false';
     if (searchNameTerm) {
@@ -35,7 +29,7 @@ export class BlogsQueryRepository {
         ORDER BY "${sortBy}" ${sortDirection}
         OFFSET $1 LIMIT $2
       `,
-      [(pageNumber - 1) * pageSize, pageSize],
+      [(pageNumber - 1) * pageSize, pageSize]
     );
 
     const totalCount = await this.dataSource.query(
@@ -43,7 +37,7 @@ export class BlogsQueryRepository {
       SELECT count(*)
       FROM public."Blogs"
       WHERE ${filter}
-      `,
+      `
     );
 
     return {
@@ -56,11 +50,11 @@ export class BlogsQueryRepository {
   }
 
   async getBlogsForUser(query: BlogsQueryDto, userId: string) {
-    const searchNameTerm: string = query.searchNameTerm || '';
+    const searchNameTerm: string = query.searchNameTerm || "";
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
-    const sortBy: string = query.sortBy || 'createdAt';
-    const sortDirection: 'asc' | 'desc' = query.sortDirection || 'desc';
+    const sortBy: string = query.sortBy || "createdAt";
+    const sortDirection: "asc" | "desc" = query.sortDirection || "desc";
 
     let filter = `"userId" = '${userId}'`;
     if (searchNameTerm) {
@@ -75,7 +69,7 @@ export class BlogsQueryRepository {
         ORDER BY "${sortBy}" ${sortDirection}
         OFFSET $1 LIMIT $2
       `,
-      [(pageNumber - 1) * pageSize, pageSize],
+      [(pageNumber - 1) * pageSize, pageSize]
     );
 
     const totalCount = await this.dataSource.query(
@@ -83,7 +77,7 @@ export class BlogsQueryRepository {
       SELECT count(*)
       FROM public."Blogs"
       WHERE ${filter}
-      `,
+      `
     );
 
     return {
@@ -102,17 +96,17 @@ export class BlogsQueryRepository {
         FROM public."Blogs"
         WHERE "id" = $1 AND "isBanned" = false 
       `,
-      [id],
+      [id]
     );
     return blog[0];
   }
 
   async getBlogsForAdmin(query: BlogsQueryDto) {
-    const searchNameTerm: string = query.searchNameTerm || '';
+    const searchNameTerm: string = query.searchNameTerm || "";
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
-    const sortBy: string = query.sortBy || 'createdAt';
-    const sortDirection: 'asc' | 'desc' = query.sortDirection || 'desc';
+    const sortBy: string = query.sortBy || "createdAt";
+    const sortDirection: "asc" | "desc" = query.sortDirection || "desc";
 
     let nameFilter = `"name" like '%%'`;
     if (searchNameTerm) {
@@ -127,7 +121,7 @@ export class BlogsQueryRepository {
         ORDER BY "${sortBy}" ${sortDirection}
         OFFSET $1 LIMIT $2
       `,
-      [(pageNumber - 1) * pageSize, pageSize],
+      [(pageNumber - 1) * pageSize, pageSize]
     );
 
     const itemsForResponse = items.map((i) => mapBlogsForAdmin(i));
@@ -137,7 +131,7 @@ export class BlogsQueryRepository {
       SELECT count(*)
       FROM public."Blogs"
       WHERE ${nameFilter}
-      `,
+      `
     );
 
     return {

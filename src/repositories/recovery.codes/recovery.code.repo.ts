@@ -1,18 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { RecoveryCode, RecoveryCodeDocument } from './recovery.code.schema';
-import { Model } from 'mongoose';
-import { RecoveryCodeDto } from '../../types/dto';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { Injectable } from "@nestjs/common";
+import { RecoveryCodeDto } from "../../types/dto";
+import { InjectDataSource } from "@nestjs/typeorm";
+import { DataSource } from "typeorm";
 
 @Injectable()
 export class RecoveryCodeRepository {
-  constructor(
-    @InjectModel(RecoveryCode.name)
-    private recoveryCodeModel: Model<RecoveryCodeDocument>,
-    @InjectDataSource() protected dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
   async createRecoveryCode(recoveryCode: RecoveryCodeDto) {
     await this.dataSource.query(
@@ -20,7 +13,7 @@ export class RecoveryCodeRepository {
         INSERT INTO public."RecoveryCodes"(
         "code", "codeExpirationDate", "userId")
         VALUES ($1, $2, $3);`,
-      [recoveryCode.code, recoveryCode.codeExpirationDate, recoveryCode.userId],
+      [recoveryCode.code, recoveryCode.codeExpirationDate, recoveryCode.userId]
     );
   }
 
@@ -31,7 +24,7 @@ export class RecoveryCodeRepository {
       FROM public."RecoveryCodes";
       WHERE "code" = $1
     `,
-      [recoveryCode],
+      [recoveryCode]
     );
     return code[0];
   }
@@ -42,7 +35,7 @@ export class RecoveryCodeRepository {
         DELETE FROM public."RecoveryCodes"
         WHERE "code" = $1;
     `,
-      [recoveryCode],
+      [recoveryCode]
     );
     return true;
   }

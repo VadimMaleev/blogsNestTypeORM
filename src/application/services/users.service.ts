@@ -1,26 +1,24 @@
-import { UserCreateInputModelType } from '../../types/input.models';
-import { v4 as uuidv4 } from 'uuid';
-import add from 'date-fns/add';
-import { UsersRepository } from '../../repositories/users/users.repo';
-import { BannedUserForBlogDto, CreateUserDto } from '../../types/dto';
+import { UserCreateInputModelType } from "../../types/input.models";
+import { v4 as uuidv4 } from "uuid";
+import add from "date-fns/add";
+import { UsersRepository } from "../../repositories/users/users.repo";
+import { BannedUserForBlogDto, CreateUserDto } from "../../types/dto";
 import {
   BadRequestException,
   HttpException,
   Injectable,
   NotFoundException,
-} from '@nestjs/common';
-import { UsersForResponse } from '../../types/types';
-import { UsersQueryRepository } from '../../repositories/users/users.query.repo';
-import { EmailAdapter } from '../../adapters/email-adapter';
-import { UserDocument } from '../../repositories/users/users.schema';
-import { DevicesRepository } from '../../repositories/devices/devices.repository';
-import { PostsRepository } from '../../repositories/posts/posts.repo';
-import { CommentsRepository } from '../../repositories/comments/comments.repo';
-import { LikesRepository } from '../../repositories/likes/likes.repo';
-import { AuthService } from './auth.service';
-import { BannedUsersForBlogRepository } from '../../repositories/users/banned.users.for.blog.repo';
-import { BlogDocument } from '../../repositories/blogs/blogs.schema';
-import { BlogsRepository } from '../../repositories/blogs/blogs.repo';
+} from "@nestjs/common";
+import { UsersForResponse } from "../../types/types";
+import { UsersQueryRepository } from "../../repositories/users/users.query.repo";
+import { EmailAdapter } from "../../adapters/email-adapter";
+import { DevicesRepository } from "../../repositories/devices/devices.repository";
+import { PostsRepository } from "../../repositories/posts/posts.repo";
+import { CommentsRepository } from "../../repositories/comments/comments.repo";
+import { LikesRepository } from "../../repositories/likes/likes.repo";
+import { AuthService } from "./auth.service";
+import { BannedUsersForBlogRepository } from "../../repositories/users/banned.users.for.blog.repo";
+import { BlogsRepository } from "../../repositories/blogs/blogs.repo";
 
 @Injectable()
 export class UsersService {
@@ -34,7 +32,7 @@ export class UsersService {
     protected likesRepository: LikesRepository,
     protected authService: AuthService,
     protected blogsRepository: BlogsRepository,
-    protected bannedUsersForBlogRepository: BannedUsersForBlogRepository,
+    protected bannedUsersForBlogRepository: BannedUsersForBlogRepository
   ) {}
 
   async createUser(user: UserCreateInputModelType): Promise<UsersForResponse> {
@@ -50,7 +48,7 @@ export class UsersService {
       true,
       false,
       null,
-      null,
+      null
     );
     await this.usersRepository.createUser(newUser);
 
@@ -88,7 +86,7 @@ export class UsersService {
     await this.usersRepository.updateConfirmCode(
       userId,
       confirmCode,
-      expirationDate,
+      expirationDate
     );
     await this.emailAdapter.sendEmailConfirmationCode(confirmCode, email);
   }
@@ -96,9 +94,9 @@ export class UsersService {
   async updateBanStatusForUser(
     id: string,
     banStatus: boolean,
-    banReason: string,
+    banReason: string
   ) {
-    const user: UserDocument = await this.usersRepository.findUserById(id);
+    const user = await this.usersRepository.findUserById(id);
     if (!user) throw new BadRequestException();
 
     const banDate = banStatus ? new Date() : null;
@@ -111,7 +109,7 @@ export class UsersService {
       user.id,
       banStatus,
       banReason,
-      banDate,
+      banDate
     );
 
     if (banStatus === true) {
@@ -128,15 +126,15 @@ export class UsersService {
     banStatus: boolean,
     banReason: string,
     blogId: string,
-    userIdBlogOwner: string,
+    userIdBlogOwner: string
   ) {
-    const user: UserDocument = await this.usersRepository.findUserById(id);
+    const user = await this.usersRepository.findUserById(id);
     if (!user) throw new NotFoundException();
 
-    const blog: BlogDocument = await this.blogsRepository.getBlogById(blogId);
+    const blog = await this.blogsRepository.getBlogById(blogId);
 
     if (userIdBlogOwner !== blog.userId)
-      throw new HttpException('Not Your Own', 403);
+      throw new HttpException("Not Your Own", 403);
 
     const bannedUser = new BannedUserForBlogDto(
       id,
@@ -144,18 +142,18 @@ export class UsersService {
       banStatus,
       banReason,
       new Date(),
-      blogId,
+      blogId
     );
 
     if (banStatus) {
       const user = await this.bannedUsersForBlogRepository.getBannedUserById(
-        id,
+        id
       );
       if (user) return true;
       return await this.bannedUsersForBlogRepository.addBannedUser(bannedUser);
     } else {
       const user = await this.bannedUsersForBlogRepository.getBannedUserById(
-        id,
+        id
       );
       if (!user) return false;
       return await this.bannedUsersForBlogRepository.deleteBannedUser(id);

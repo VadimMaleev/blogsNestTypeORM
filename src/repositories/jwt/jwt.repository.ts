@@ -1,16 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { JwtBlackList, JwtDocument } from './jwt.schema';
-import { Model } from 'mongoose';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { Injectable } from "@nestjs/common";
+import { InjectDataSource } from "@nestjs/typeorm";
+import { DataSource } from "typeorm";
 
 @Injectable()
 export class JwtRepository {
-  constructor(
-    @InjectModel(JwtBlackList.name) private tokensModel: Model<JwtDocument>,
-    @InjectDataSource() protected dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
   async expireRefreshToken(refreshToken: string) {
     await this.dataSource.query(
@@ -19,10 +13,18 @@ export class JwtRepository {
         "refreshToken")
         VALUES ($1);
       `,
-      [refreshToken],
+      [refreshToken]
     );
   }
   async findAllExpiredTokens(token: string) {
-    return this.tokensModel.findOne({ refreshToken: token });
+    const refreshToken = await this.dataSource.query(
+      `
+        SELECT id, "refreshToken"
+        FROM public."Tokens"
+        WHERE "refreshToken" = $1
+        `,
+      [token]
+    );
+    return refreshToken[0];
   }
 }
