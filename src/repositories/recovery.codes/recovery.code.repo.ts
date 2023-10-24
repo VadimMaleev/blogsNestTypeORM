@@ -1,42 +1,26 @@
 import { Injectable } from "@nestjs/common";
 import { RecoveryCodeDto } from "../../types/dto";
-import { InjectDataSource } from "@nestjs/typeorm";
-import { DataSource } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { RecoveryCode } from "./recovery.code.entity";
 
 @Injectable()
 export class RecoveryCodeRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(RecoveryCode)
+    protected recoveryCodeRepository: Repository<RecoveryCode>
+  ) {}
 
   async createRecoveryCode(recoveryCode: RecoveryCodeDto) {
-    await this.dataSource.query(
-      `
-        INSERT INTO public."RecoveryCodes"(
-        "code", "codeExpirationDate", "userId")
-        VALUES ($1, $2, $3);`,
-      [recoveryCode.code, recoveryCode.codeExpirationDate, recoveryCode.userId]
-    );
+    return await this.recoveryCodeRepository.save(recoveryCode);
   }
 
-  async findCode(recoveryCode: string) {
-    const code = await this.dataSource.query(
-      `
-      SELECT "code", "codeExpirationDate", "userId"
-      FROM public."RecoveryCodes";
-      WHERE "code" = $1
-    `,
-      [recoveryCode]
-    );
-    return code[0];
+  async findCode(recoveryCode: string): Promise<RecoveryCode> {
+    return await this.recoveryCodeRepository.findOneBy({ code: recoveryCode });
   }
 
   async deleteCode(recoveryCode: string) {
-    await this.dataSource.query(
-      `
-        DELETE FROM public."RecoveryCodes"
-        WHERE "code" = $1;
-    `,
-      [recoveryCode]
-    );
+    await this.recoveryCodeRepository.delete({ code: recoveryCode });
     return true;
   }
 }

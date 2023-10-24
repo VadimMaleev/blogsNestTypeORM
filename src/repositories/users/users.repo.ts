@@ -1,13 +1,12 @@
 import { CreateUserDto } from "../../types/dto";
 import { Injectable } from "@nestjs/common";
-import { DataSource, Repository } from "typeorm";
-import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "./user.entity";
 
 @Injectable()
 export class UsersRepository {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(User)
     protected usersRepository: Repository<User>
   ) {}
@@ -21,7 +20,7 @@ export class UsersRepository {
     return true;
   }
 
-  async updateConfirmation(id: string) {
+  async updateConfirmation(id: string): Promise<boolean> {
     await this.usersRepository.update({ id: id }, { isConfirmed: true });
     return true;
   }
@@ -30,7 +29,7 @@ export class UsersRepository {
     userId: string,
     confirmCode: string,
     expirationDate: Date
-  ) {
+  ): Promise<boolean> {
     await this.usersRepository.update(
       { id: userId },
       { confirmationCode: confirmCode, codeExpirationDate: expirationDate }
@@ -64,5 +63,24 @@ export class UsersRepository {
 
   async findUserById(id: string): Promise<User> {
     return this.usersRepository.findOneBy({ id: id });
+  }
+
+  async findUserByEmail(email: string): Promise<User> {
+    return await this.usersRepository.findOneBy({ email: email });
+  }
+
+  async findUserByLogin(login: string): Promise<User> {
+    return await this.usersRepository.findOneBy({ login: login });
+  }
+
+  async findUserByCode(code: string): Promise<User> {
+    return await this.usersRepository.findOneBy({ confirmationCode: code });
+  }
+
+  async findUserByLoginOrEmail(loginOrEmail: string): Promise<User> {
+    return await this.usersRepository.findOneBy([
+      { login: loginOrEmail },
+      { email: loginOrEmail },
+    ]);
   }
 }

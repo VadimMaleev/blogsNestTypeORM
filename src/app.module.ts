@@ -46,6 +46,7 @@ import { BloggersUsersController } from "./api/bloggers.api/users/bloggers.users
 import { BannedUsersForBlogRepository } from "./repositories/users/banned.users.for.blog.repo";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "./repositories/users/user.entity";
+import { RecoveryCode } from "./repositories/recovery.codes/recovery.code.entity";
 
 const useCases = [
   CheckCredentialsUseCase,
@@ -61,10 +62,10 @@ const useCases = [
       url: "postgres://VadimMaleev:Q1BS4wvXkaUo@ep-lively-night-96871029.eu-central-1.aws.neon.tech/neondb",
       type: "postgres",
       ssl: true,
-      autoLoadEntities: false,
+      autoLoadEntities: true,
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, RecoveryCode]),
     CqrsModule,
     ConfigModule.forRoot(),
     MongooseModule.forRoot(process.env.test),

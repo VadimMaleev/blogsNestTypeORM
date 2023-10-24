@@ -10,7 +10,6 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { UsersForResponse } from "../../types/types";
-import { UsersQueryRepository } from "../../repositories/users/users.query.repo";
 import { EmailAdapter } from "../../adapters/email-adapter";
 import { DevicesRepository } from "../../repositories/devices/devices.repository";
 import { PostsRepository } from "../../repositories/posts/posts.repo";
@@ -24,7 +23,6 @@ import { BlogsRepository } from "../../repositories/blogs/blogs.repo";
 export class UsersService {
   constructor(
     protected usersRepository: UsersRepository,
-    protected usersQueryRepository: UsersQueryRepository,
     protected emailAdapter: EmailAdapter,
     protected devicesRepository: DevicesRepository,
     protected postsRepository: PostsRepository,
@@ -72,7 +70,7 @@ export class UsersService {
   }
 
   async confirmUser(code: string): Promise<boolean> {
-    const user = await this.usersQueryRepository.findUserByCode(code);
+    const user = await this.usersRepository.findUserByCode(code);
     if (!user) return false;
     if (user.isConfirmed) return false;
     if (user.confirmationCode !== code) return false;

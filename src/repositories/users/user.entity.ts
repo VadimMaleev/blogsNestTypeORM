@@ -1,6 +1,7 @@
-import { Column, Entity, PrimaryColumn } from "typeorm";
+import { Column, Entity, OneToOne, PrimaryColumn } from "typeorm";
+import { RecoveryCode } from "../recovery.codes/recovery.code.entity";
 
-@Entity()
+@Entity("User")
 export class User {
   @PrimaryColumn({ type: "uuid" })
   id: string;
@@ -34,4 +35,7 @@ export class User {
 
   @Column({ nullable: true })
   banReason: string;
+
+  @OneToOne(() => RecoveryCode, (r) => r.user)
+  recoveryCode: RecoveryCode;
 }
