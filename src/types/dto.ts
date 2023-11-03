@@ -104,7 +104,7 @@ export class CreateDeviceDto {
     public ip: string,
     public title: string,
     public userId: string,
-    public lastActiveDate: string
+    public lastActiveDate: Date
   ) {}
 }
 

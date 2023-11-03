@@ -34,11 +34,11 @@ export class AuthService {
       this.jwtService.getLastActiveDateFromRefreshToken(refreshToken);
 
     const device = new CreateDeviceDto(
+      deviceId,
       ip,
       deviceName,
-      lastActiveDate,
-      deviceId,
-      userId
+      userId,
+      lastActiveDate
     );
     await this.devicesRepository.createDevice(device);
     return refreshToken;

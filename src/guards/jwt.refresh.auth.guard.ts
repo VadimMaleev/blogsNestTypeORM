@@ -38,7 +38,7 @@ export class JwtRefreshAuthGuard implements CanActivate {
 
     const lastActiveDateFromToken =
       this.jwtService.getLastActiveDateFromRefreshToken(refreshTokenFromCookie);
-    if (lastActiveDateFromToken !== device.lastActiveDate.toISOString())
+    if (lastActiveDateFromToken !== device.lastActiveDate)
       throw new UnauthorizedException();
     // const refreshTokenIsBlack = await this.jwtRepository.findAllExpiredTokens(
     //   refreshTokenFromCookie

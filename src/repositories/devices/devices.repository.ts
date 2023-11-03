@@ -19,7 +19,7 @@ export class DevicesRepository {
   async updateLastActiveDateByDeviceAndUserId(
     deviceId: string,
     userId: string,
-    newLastActiveDate: string
+    newLastActiveDate: Date
   ): Promise<boolean> {
     await this.deviceRepository.update(
       { deviceId: deviceId, userId: userId },
