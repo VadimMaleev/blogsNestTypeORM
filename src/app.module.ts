@@ -69,8 +69,8 @@ const useCases = [
     CqrsModule,
     ConfigModule.forRoot(),
     ThrottlerModule.forRoot({
-      // ttl: 10,
-      // limit: 5,
+      ttl: 10,
+      limit: 5,
     }),
   ],
   controllers: [
