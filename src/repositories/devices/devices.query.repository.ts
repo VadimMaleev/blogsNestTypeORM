@@ -9,8 +9,16 @@ export class DevicesQueryRepository {
     @InjectRepository(Device) protected deviceRepository: Repository<Device>
   ) {}
 
-  async findDevicesForUser(userId: string): Promise<Device> {
-    return await this.deviceRepository.findOneBy({ userId: userId });
+  async findDevicesForUser(userId: string): Promise<Device[]> {
+    return await this.deviceRepository.find({
+      select: {
+        ip: true,
+        title: true,
+        lastActiveDate: true,
+        deviceId: true,
+      },
+      where: { userId: userId },
+    });
   }
 
   async findDeviceByDeviceIdAndUserIdAndDate(
