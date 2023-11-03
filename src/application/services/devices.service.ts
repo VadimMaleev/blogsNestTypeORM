@@ -1,43 +1,43 @@
-import { JWTService } from '../../repositories/jwt/jwt.service';
-import { DevicesRepository } from '../../repositories/devices/devices.repository';
-import { DevicesQueryRepository } from '../../repositories/devices/devices.query.repository';
-import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
+import { JWTService } from "../../repositories/jwt/jwt.service";
+import { DevicesRepository } from "../../repositories/devices/devices.repository";
+import { DevicesQueryRepository } from "../../repositories/devices/devices.query.repository";
+import { HttpException, Injectable, NotFoundException } from "@nestjs/common";
 
 @Injectable()
 export class DevicesService {
   constructor(
     protected jwtService: JWTService,
     protected devicesRepository: DevicesRepository,
-    protected devicesQueryRepository: DevicesQueryRepository,
+    protected devicesQueryRepository: DevicesQueryRepository
   ) {}
 
   async deleteAllDevicesExceptCurrent(userId: string, oldRefreshToken: string) {
     const jwtPayload = await this.jwtService.extractPayloadFromToken(
-      oldRefreshToken,
+      oldRefreshToken
     );
     const deviceId = jwtPayload.deviceId;
-    const lastActiveDate = new Date(jwtPayload.iat * 1000).toISOString();
+    const lastActiveDate = new Date(jwtPayload.iat * 1000);
     const device =
       await this.devicesQueryRepository.findDeviceByDeviceIdAndUserIdAndDate(
         deviceId,
         userId,
-        lastActiveDate,
+        lastActiveDate
       );
     if (!device) return false;
     return this.devicesRepository.deleteAllDevicesExceptCurrent(
       userId,
-      deviceId,
+      deviceId
     );
   }
 
   async deleteDeviceById(userId: string, deviceId: string): Promise<boolean> {
     const device = await this.devicesQueryRepository.findDeviceByDeviceId(
-      deviceId,
+      deviceId
     );
     if (!device) throw new NotFoundException();
-    if (device.userId !== userId) throw new HttpException('Not your own', 403);
+    if (device.userId !== userId) throw new HttpException("Not your own", 403);
     const isDeleted = await this.devicesRepository.deleteDevice(
-      device.deviceId,
+      device.deviceId
     );
     if (!isDeleted) throw new NotFoundException();
     return true;

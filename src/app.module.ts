@@ -3,7 +3,6 @@ import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { PublicBlogsController } from "./api/public.api/blogs/publicBlogsController";
 import { BlogsRepository } from "./repositories/blogs/blogs.repo";
-import { MongooseModule } from "@nestjs/mongoose";
 import { ConfigModule } from "@nestjs/config";
 import { BlogsQueryRepository } from "./repositories/blogs/blogs.query.repo";
 import { UsersSAController } from "./api/sa.api/users/usersSAController";
@@ -47,6 +46,7 @@ import { BannedUsersForBlogRepository } from "./repositories/users/banned.users.
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "./repositories/users/user.entity";
 import { RecoveryCode } from "./repositories/recovery.codes/recovery.code.entity";
+import { Device } from "./repositories/devices/device.entity";
 
 const useCases = [
   CheckCredentialsUseCase,
@@ -65,14 +65,13 @@ const useCases = [
       autoLoadEntities: true,
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([User, RecoveryCode]),
+    TypeOrmModule.forFeature([User, RecoveryCode, Device]),
     CqrsModule,
     ConfigModule.forRoot(),
-    MongooseModule.forRoot(process.env.test),
-    ThrottlerModule.forRoot({
-      ttl: 10,
-      limit: 5,
-    }),
+    // ThrottlerModule.forRoot({
+    //   ttl: 10,
+    //   limit: 5,
+    // }),
   ],
   controllers: [
     AppController,

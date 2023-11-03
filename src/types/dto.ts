@@ -3,7 +3,7 @@ export class PaginationDto {
   pageNumber: string;
   pageSize: string;
   sortBy: string;
-  sortDirection: 'desc' | 'asc';
+  sortDirection: "desc" | "asc";
 }
 
 export class BlogsQueryDto extends PaginationDto {
@@ -44,7 +44,7 @@ export class CreateBlogDto {
     public isMembership: boolean,
     // public userId: string,
     // public login: string,
-    public isBanned: boolean,
+    public isBanned: boolean
   ) {}
 }
 
@@ -60,7 +60,7 @@ export class CreateUserDto {
     public isConfirmed: boolean,
     public isBanned: boolean,
     public banDate: Date | null,
-    public banReason: string,
+    public banReason: string
   ) {}
 }
 
@@ -74,7 +74,7 @@ export class CreatePostDto {
     public blogName: string,
     public createdAt: Date,
     // public userId: string,
-    public isVisible: boolean,
+    public isVisible: boolean
   ) {}
 }
 
@@ -86,7 +86,7 @@ export class CreateCommentDto {
     public userLogin: string,
     public createdAt: Date,
     public postId: string,
-    public isVisible: boolean,
+    public isVisible: boolean
   ) {}
 }
 
@@ -94,17 +94,17 @@ export class RecoveryCodeDto {
   constructor(
     public code: string,
     public codeExpirationDate: Date,
-    public userId: string,
+    public userId: string
   ) {}
 }
 
 export class CreateDeviceDto {
   constructor(
+    public deviceId: string,
     public ip: string,
     public title: string,
-    public lastActiveDate: string,
-    public deviceId: string,
     public userId: string,
+    public lastActiveDate: string
   ) {}
 }
 
@@ -115,6 +115,6 @@ export class BannedUserForBlogDto {
     public isBanned: boolean,
     public banReason: string,
     public banDate: Date,
-    public blogId: string,
+    public blogId: string
   ) {}
 }

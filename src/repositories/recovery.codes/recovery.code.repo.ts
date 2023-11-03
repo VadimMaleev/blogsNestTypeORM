@@ -19,7 +19,7 @@ export class RecoveryCodeRepository {
     return await this.recoveryCodeRepository.findOneBy({ code: recoveryCode });
   }
 
-  async deleteCode(recoveryCode: string) {
+  async deleteCode(recoveryCode: string): Promise<boolean> {
     await this.recoveryCodeRepository.delete({ code: recoveryCode });
     return true;
   }

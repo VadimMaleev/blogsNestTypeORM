@@ -1,47 +1,31 @@
 import { Injectable } from "@nestjs/common";
-import { InjectDataSource } from "@nestjs/typeorm";
-import { DataSource } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { Device } from "./device.entity";
 
 @Injectable()
 export class DevicesQueryRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(Device) protected deviceRepository: Repository<Device>
+  ) {}
 
-  async findDevicesForUser(userId: string) {
-    return this.dataSource.query(
-      `
-        SELECT "ip", "title", "lastActiveDate", "deviceId"
-        FROM public."Devices"
-        WHERE "userId" = $1
-      `,
-      [userId]
-    );
+  async findDevicesForUser(userId: string): Promise<Device> {
+    return await this.deviceRepository.findOneBy({ userId: userId });
   }
 
   async findDeviceByDeviceIdAndUserIdAndDate(
     deviceId: string,
     userId: string,
-    lastActiveDate: string
-  ) {
-    const device = await this.dataSource.query(
-      `
-        SELECT "deviceId", "ip", "title", "lastActiveDate", "userId"
-        FROM public."Devices"
-        WHERE "deviceId" = $1 AND "userId" = $2 AND "lastActiveDate" = $3
-      `,
-      [deviceId, userId, lastActiveDate]
-    );
-    return device[0];
+    lastActiveDate: Date
+  ): Promise<Device> {
+    return await this.deviceRepository.findOneBy({
+      deviceId: deviceId,
+      userId: userId,
+      lastActiveDate: lastActiveDate,
+    });
   }
 
-  async findDeviceByDeviceId(deviceId: string) {
-    const device = await this.dataSource.query(
-      `
-        SELECT "deviceId", "ip", "title", "lastActiveDate", "userId"
-        FROM public."Devices"
-        WHERE "deviceId" = $1
-      `,
-      [deviceId]
-    );
-    return device[0];
+  async findDeviceByDeviceId(deviceId: string): Promise<Device> {
+    return await this.deviceRepository.findOneBy({ deviceId: deviceId });
   }
 }

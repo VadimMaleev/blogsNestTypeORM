@@ -1,5 +1,6 @@
-import { Column, Entity, OneToOne, PrimaryColumn } from "typeorm";
+import { Column, Entity, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
 import { RecoveryCode } from "../recovery.codes/recovery.code.entity";
+import { Device } from "../devices/device.entity";
 
 @Entity("User")
 export class User {
@@ -38,4 +39,7 @@ export class User {
 
   @OneToOne(() => RecoveryCode, (r) => r.user)
   recoveryCode: RecoveryCode;
+
+  @OneToMany(() => Device, (d) => d.user)
+  devices: Device[];
 }

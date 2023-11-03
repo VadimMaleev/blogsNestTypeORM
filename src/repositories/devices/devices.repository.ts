@@ -1,27 +1,19 @@
 import { Injectable } from "@nestjs/common";
 import { CreateDeviceDto } from "../../types/dto";
-import { InjectDataSource } from "@nestjs/typeorm";
-import { DataSource } from "typeorm";
+import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
+import { DataSource, Not, Repository } from "typeorm";
+import { Device } from "./device.entity";
 
 @Injectable()
 export class DevicesRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(Device) protected deviceRepository: Repository<Device>
+  ) {}
 
   async createDevice(device: CreateDeviceDto) {
-    await this.dataSource.query(
-      `
-        INSERT INTO public."Devices"(
-        "deviceId", "ip", "title", "lastActiveDate", "userId")
-        VALUES ($1, $2, $3, $4, $5)
-      `,
-      [
-        device.deviceId,
-        device.ip,
-        device.title,
-        device.lastActiveDate,
-        device.userId,
-      ]
-    );
+    await this.deviceRepository.save(device);
+    return true;
   }
 
   async updateLastActiveDateByDeviceAndUserId(
@@ -29,29 +21,23 @@ export class DevicesRepository {
     userId: string,
     newLastActiveDate: string
   ): Promise<boolean> {
-    await this.dataSource.query(
-      `
-        UPDATE public."Devices"
-        SET "lastActiveDate"= $1
-        WHERE "deviceId" = $2 AND "userId" = $3
-      `,
-      [newLastActiveDate, deviceId, userId]
+    await this.deviceRepository.update(
+      { deviceId: deviceId, userId: userId },
+      { lastActiveDate: newLastActiveDate }
     );
     return true;
   }
 
-  async findAndDeleteDeviceByDeviceIdAndUserIdAndDate(
+  async deleteDeviceByDeviceIdAndUserIdAndDate(
     userId: string,
     deviceId: string,
-    lastActiveDate: string
+    lastActiveDate: Date
   ): Promise<boolean> {
-    await this.dataSource.query(
-      `
-        DELETE FROM public."Devices"
-        WHERE "deviceId" = $1 AND "userId" = $2 AND "lastActiveDate" = $3
-    `,
-      [deviceId, userId, lastActiveDate]
-    );
+    await this.deviceRepository.delete({
+      deviceId: deviceId,
+      userId: userId,
+      lastActiveDate: lastActiveDate,
+    });
     return true;
   }
 
@@ -59,35 +45,20 @@ export class DevicesRepository {
     userId: string,
     deviceId: string
   ): Promise<boolean> {
-    await this.dataSource.query(
-      `
-        DELETE FROM public."Devices"
-        WHERE "userId" = $1 AND "deviceId" != $2
-      `,
-      [userId, deviceId]
-    );
+    await this.deviceRepository.delete({
+      userId: userId,
+      deviceId: Not(deviceId),
+    });
     return true;
   }
 
   async deleteDevice(deviceId: string): Promise<boolean> {
-    await this.dataSource.query(
-      `
-        DELETE FROM public."Devices"
-        WHERE "deviceId" = $1
-      `,
-      [deviceId]
-    );
+    await this.deviceRepository.delete({ deviceId: deviceId });
     return true;
   }
 
   async deleteDevicesForBannedUser(userId: string) {
-    await this.dataSource.query(
-      `
-        DELETE FROM public."Devices"
-        WHERE "userId" = $1
-      `,
-      [userId]
-    );
+    await this.deviceRepository.delete({ userId: userId });
     return true;
   }
 }
