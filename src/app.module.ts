@@ -68,10 +68,10 @@ const useCases = [
     TypeOrmModule.forFeature([User, RecoveryCode, Device]),
     CqrsModule,
     ConfigModule.forRoot(),
-    // ThrottlerModule.forRoot({
-    //   ttl: 10,
-    //   limit: 5,
-    // }),
+    ThrottlerModule.forRoot({
+      // ttl: 10,
+      // limit: 5,
+    }),
   ],
   controllers: [
     AppController,
