@@ -1,15 +1,19 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { INestApplication } from "@nestjs/common";
+import {
+  BadRequestException,
+  INestApplication,
+  ValidationPipe,
+} from "@nestjs/common";
 import { agent as request } from "supertest";
 import { AppModule } from "../src/app.module";
+import cookieParser from "cookie-parser";
 
-describe("Test Devices", () => {
+describe("Test Devices e2e", () => {
   let app: INestApplication;
 
   let token = "";
-  let token2 = "";
+  let refreshToken = "";
   let userId = "";
-  let userId2 = "";
 
   const user = {
     login: "loginTEST",
@@ -17,19 +21,8 @@ describe("Test Devices", () => {
     password: "123TEST",
   };
 
-  const user2 = {
-    login: "login222TEST",
-    email: "testing222byme@gmail.com",
-    password: "123TEST",
-  };
-
   const loginUser = {
     loginOrEmail: "loginTEST",
-    password: "123TEST",
-  };
-
-  const loginUser2 = {
-    loginOrEmail: "login222TEST",
     password: "123TEST",
   };
 
@@ -39,6 +32,28 @@ describe("Test Devices", () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.enableCors();
+    app.use(cookieParser());
+    app.useGlobalPipes(
+      new ValidationPipe({
+        stopAtFirstError: true,
+        forbidUnknownValues: false,
+        exceptionFactory: (errors) => {
+          const errorsForResponse = [];
+          errors.forEach((e) => {
+            const keysConstraints = Object.keys(e.constraints);
+            keysConstraints.forEach((ckey) => {
+              errorsForResponse.push({
+                message: e.constraints[ckey],
+                field: e.property,
+              });
+            });
+          });
+
+          throw new BadRequestException(errorsForResponse);
+        },
+      })
+    );
     await app.init();
   });
 
@@ -46,14 +61,16 @@ describe("Test Devices", () => {
     await app.close();
   });
 
-  describe("creating users and login users", () => {
-    it("delete all data", async () => {
+  describe("delete all data", () => {
+    it("delete all data in DB", async () => {
       const response = await request(app.getHttpServer()).delete(
         "/testing/all-data"
       );
       expect(response.status).toBe(204);
     });
+  });
 
+  describe("creating users and login users", () => {
     it("should creat new user", async () => {
       const response = await request(app.getHttpServer())
         .post("/sa/users")
@@ -69,21 +86,6 @@ describe("Test Devices", () => {
       expect(response.body.email).toBe(user.email);
     });
 
-    it("should creat new user2", async () => {
-      const response = await request(app.getHttpServer())
-        .post("/sa/users")
-        .send(user2)
-        .set(
-          "Authorization",
-          "Basic " + new Buffer("admin:qwerty").toString("base64")
-        );
-      userId2 = response.body.id;
-      expect(response).toBeDefined();
-      expect(response.status).toBe(201);
-      expect(response.body.login).toBe(user2.login);
-      expect(response.body.email).toBe(user2.email);
-    });
-
     describe("login user", () => {
       it("login - should return 200 status", async () => {
         const response = await request(app.getHttpServer())
@@ -91,21 +93,19 @@ describe("Test Devices", () => {
           .send(loginUser)
           .set("user-agent", "test");
         token = response.body.accessToken;
+        refreshToken = response.headers["set-cookie"];
         expect(response.status).toBe(200);
         expect(response.body.accessToken).toBeDefined();
       });
     });
+  });
 
-    describe("login user2", () => {
-      it("login - should return 200 status", async () => {
-        const response = await request(app.getHttpServer())
-          .post("/auth/login")
-          .send(loginUser2)
-          .set("user-agent", "test");
-        token2 = response.body.accessToken;
-        expect(response.status).toBe(200);
-        expect(response.body.accessToken).toBeDefined();
-      });
+  describe("get new pair of tokens", () => {
+    it("should return new pair", async () => {
+      const response = await request(app.getHttpServer())
+        .post("/auth/refresh-token")
+        .set("Cookie", refreshToken);
+      expect(response.status).toBe(200);
     });
   });
 });
