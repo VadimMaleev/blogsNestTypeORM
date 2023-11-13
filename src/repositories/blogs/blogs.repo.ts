@@ -3,7 +3,7 @@ import { BlogCreateInputModelType } from "../../types/input.models";
 import { CreateBlogDto } from "../../types/dto";
 import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { DataSource, Repository } from "typeorm";
-import { Blog } from "./blogs.entity";
+import { Blog } from "./blog.entity";
 
 @Injectable()
 export class BlogsRepository {

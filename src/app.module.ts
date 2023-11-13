@@ -47,7 +47,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "./repositories/users/user.entity";
 import { RecoveryCode } from "./repositories/recovery.codes/recovery.code.entity";
 import { Device } from "./repositories/devices/device.entity";
-import { Blog } from "./repositories/blogs/blogs.entity";
+import { Blog } from "./repositories/blogs/blog.entity";
 
 const useCases = [
   CheckCredentialsUseCase,
