@@ -158,12 +158,12 @@ export class BlogsSAController {
     return isDeleted;
   }
 
-  @Put(":blogId/bind-with-user/:userId")
-  @HttpCode(204)
-  @UseGuards(BasicAuthGuard)
-  async bindBlogToUser(@Param() params: BindBlogToUserParams) {
-    return await this.blogsService.bindBlogToUser(params.blogId, params.userId);
-  }
+  // @Put(":blogId/bind-with-user/:userId")
+  // @HttpCode(204)
+  // @UseGuards(BasicAuthGuard)
+  // async bindBlogToUser(@Param() params: BindBlogToUserParams) {
+  //   return await this.blogsService.bindBlogToUser(params.blogId, params.userId);
+  // }
 
   @Put(":id/ban")
   @HttpCode(204)

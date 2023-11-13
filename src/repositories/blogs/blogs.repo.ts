@@ -1,43 +1,23 @@
 import { Injectable } from "@nestjs/common";
 import { BlogCreateInputModelType } from "../../types/input.models";
 import { CreateBlogDto } from "../../types/dto";
-import { InjectDataSource } from "@nestjs/typeorm";
-import { DataSource } from "typeorm";
+import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
+import { DataSource, Repository } from "typeorm";
+import { Blog } from "./blogs.entity";
 
 @Injectable()
 export class BlogsRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(Blog) protected blogsRepository: Repository<Blog>
+  ) {}
 
   async createBlog(newBlog: CreateBlogDto) {
-    await this.dataSource.query(
-      `
-        INSERT INTO public."Blogs"(
-        "id", "name", "description", "websiteUrl", "createdAt", "isMembership", "isBanned", "banDate")
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
-    `,
-      [
-        newBlog.id,
-        newBlog.name,
-        newBlog.description,
-        newBlog.websiteUrl,
-        newBlog.createdAt,
-        newBlog.isMembership,
-        // newBlog.userId,
-        // newBlog.login,
-        newBlog.isBanned,
-        null,
-      ]
-    );
+    return this.blogsRepository.save(newBlog);
   }
 
   async deleteBlog(id: string): Promise<boolean> {
-    await this.dataSource.query(
-      `
-        DELETE FROM public."Blogs"
-        WHERE "id" = $1
-        `,
-      [id]
-    );
+    await this.blogsRepository.delete({ id: id });
     return true;
   }
 
@@ -45,15 +25,13 @@ export class BlogsRepository {
     id: string,
     inputModel: BlogCreateInputModelType
   ): Promise<boolean> {
-    await this.dataSource.query(
-      `
-        UPDATE public."Blogs"
-        SET  "name" = $1, 
-             "description" = $2,
-             "websiteUrl" = $3
-        WHERE "id" = $4
-        `,
-      [inputModel.name, inputModel.description, inputModel.websiteUrl, id]
+    await this.blogsRepository.update(
+      { id: id },
+      {
+        name: inputModel.name,
+        description: inputModel.description,
+        websiteUrl: inputModel.websiteUrl,
+      }
     );
     return true;
   }
@@ -76,27 +54,14 @@ export class BlogsRepository {
     banDate: Date | null,
     blogId: string
   ) {
-    await this.dataSource.query(
-      `
-        UPDATE public."Blogs"
-        SET  "isBanned" = $1, 
-             "banDate" = $2
-        WHERE "id" = $3
-        `,
-      [banStatus, banDate, blogId]
+    await this.blogsRepository.update(
+      { id: blogId },
+      { isBanned: banStatus, banDate: banDate }
     );
     return true;
   }
 
   async getBlogById(id: string) {
-    const blog = await this.dataSource.query(
-      `
-        SELECT "id", "name", "description", "websiteUrl", "createdAt", "isMembership", "isBanned", "banDate"
-        FROM public."Blogs"
-        WHERE "id" = $1
-      `,
-      [id]
-    );
-    return blog[0];
+    return this.blogsRepository.findOneBy({ id: id });
   }
 }

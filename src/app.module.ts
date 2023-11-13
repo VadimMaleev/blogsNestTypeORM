@@ -47,6 +47,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "./repositories/users/user.entity";
 import { RecoveryCode } from "./repositories/recovery.codes/recovery.code.entity";
 import { Device } from "./repositories/devices/device.entity";
+import { Blog } from "./repositories/blogs/blogs.entity";
 
 const useCases = [
   CheckCredentialsUseCase,
@@ -65,7 +66,7 @@ const useCases = [
       autoLoadEntities: true,
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([User, RecoveryCode, Device]),
+    TypeOrmModule.forFeature([User, RecoveryCode, Device, Blog]),
     CqrsModule,
     ConfigModule.forRoot(),
     ThrottlerModule.forRoot({

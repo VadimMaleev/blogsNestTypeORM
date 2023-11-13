@@ -119,42 +119,42 @@ export class UsersService {
     // await this.likesRepository.updateVisibleStatus(id, banStatus);
   }
 
-  async updateUserBanStatusForBlog(
-    id: string,
-    banStatus: boolean,
-    banReason: string,
-    blogId: string,
-    userIdBlogOwner: string
-  ) {
-    const user = await this.usersRepository.findUserById(id);
-    if (!user) throw new NotFoundException();
-
-    const blog = await this.blogsRepository.getBlogById(blogId);
-
-    if (userIdBlogOwner !== blog.userId)
-      throw new HttpException("Not Your Own", 403);
-
-    const bannedUser = new BannedUserForBlogDto(
-      id,
-      user.login,
-      banStatus,
-      banReason,
-      new Date(),
-      blogId
-    );
-
-    if (banStatus) {
-      const user = await this.bannedUsersForBlogRepository.getBannedUserById(
-        id
-      );
-      if (user) return true;
-      return await this.bannedUsersForBlogRepository.addBannedUser(bannedUser);
-    } else {
-      const user = await this.bannedUsersForBlogRepository.getBannedUserById(
-        id
-      );
-      if (!user) return false;
-      return await this.bannedUsersForBlogRepository.deleteBannedUser(id);
-    }
-  }
+  // async updateUserBanStatusForBlog(
+  //   id: string,
+  //   banStatus: boolean,
+  //   banReason: string,
+  //   blogId: string,
+  //   userIdBlogOwner: string
+  // ) {
+  //   const user = await this.usersRepository.findUserById(id);
+  //   if (!user) throw new NotFoundException();
+  //
+  //   const blog = await this.blogsRepository.getBlogById(blogId);
+  //
+  //   if (userIdBlogOwner !== blog.userId)
+  //     throw new HttpException("Not Your Own", 403);
+  //
+  //   const bannedUser = new BannedUserForBlogDto(
+  //     id,
+  //     user.login,
+  //     banStatus,
+  //     banReason,
+  //     new Date(),
+  //     blogId
+  //   );
+  //
+  //   if (banStatus) {
+  //     const user = await this.bannedUsersForBlogRepository.getBannedUserById(
+  //       id
+  //     );
+  //     if (user) return true;
+  //     return await this.bannedUsersForBlogRepository.addBannedUser(bannedUser);
+  //   } else {
+  //     const user = await this.bannedUsersForBlogRepository.getBannedUserById(
+  //       id
+  //     );
+  //     if (!user) return false;
+  //     return await this.bannedUsersForBlogRepository.deleteBannedUser(id);
+  //   }
+  // }
 }

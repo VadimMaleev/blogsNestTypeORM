@@ -1,22 +1,22 @@
-import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
-import { BlogsRepository } from '../../repositories/blogs/blogs.repo';
-import { BlogCreateInputModelType } from '../../types/input.models';
-import { BlogsForResponse } from '../../types/types';
-import { CreateBlogDto } from '../../types/dto';
-import { v4 as uuidv4 } from 'uuid';
-import { PostsRepository } from '../../repositories/posts/posts.repo';
-import { UsersRepository } from '../../repositories/users/users.repo';
+import { BadRequestException, HttpException, Injectable } from "@nestjs/common";
+import { BlogsRepository } from "../../repositories/blogs/blogs.repo";
+import { BlogCreateInputModelType } from "../../types/input.models";
+import { BlogsForResponse } from "../../types/types";
+import { CreateBlogDto } from "../../types/dto";
+import { v4 as uuidv4 } from "uuid";
+import { PostsRepository } from "../../repositories/posts/posts.repo";
+import { UsersRepository } from "../../repositories/users/users.repo";
 
 @Injectable()
 export class BlogsService {
   constructor(
     protected blogsRepository: BlogsRepository,
     protected postsRepository: PostsRepository,
-    protected usersRepository: UsersRepository,
+    protected usersRepository: UsersRepository
   ) {}
 
   async createBlog(
-    blog: BlogCreateInputModelType,
+    blog: BlogCreateInputModelType
     // userId: string,
     // login: string,
   ): Promise<BlogsForResponse> {
@@ -29,7 +29,7 @@ export class BlogsService {
       false,
       // userId,
       // login,
-      false,
+      false
     );
 
     await this.blogsRepository.createBlog(newBlog);
@@ -45,7 +45,7 @@ export class BlogsService {
 
   async updateBlog(
     id: string,
-    inputModel: BlogCreateInputModelType,
+    inputModel: BlogCreateInputModelType
     //userId: string,
   ): Promise<boolean> {
     const blog = await this.blogsRepository.getBlogById(id);
@@ -61,19 +61,19 @@ export class BlogsService {
     return this.blogsRepository.deleteBlog(id);
   }
 
-  async bindBlogToUser(blogId: string, userId: string) {
-    const user = await this.usersRepository.findUserById(userId);
-    if (!user) throw new BadRequestException('userId invalid');
-
-    const blog = await this.blogsRepository.getBlogById(blogId);
-    if (!blog || blog.userId) throw new BadRequestException('blogId invalid');
-
-    return await this.blogsRepository.bindBlogToUser(
-      user.id,
-      user.login,
-      blog.id,
-    );
-  }
+  // async bindBlogToUser(blogId: string, userId: string) {
+  //   const user = await this.usersRepository.findUserById(userId);
+  //   if (!user) throw new BadRequestException('userId invalid');
+  //
+  //   const blog = await this.blogsRepository.getBlogById(blogId);
+  //   if (!blog || blog.userId) throw new BadRequestException('blogId invalid');
+  //
+  //   return await this.blogsRepository.bindBlogToUser(
+  //     user.id,
+  //     user.login,
+  //     blog.id,
+  //   );
+  // }
 
   async banOrUnbanBlog(id: string, banStatus: boolean) {
     const blog = await this.blogsRepository.getBlogById(id);
