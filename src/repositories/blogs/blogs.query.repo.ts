@@ -1,14 +1,13 @@
 import { BlogsForResponse, BlogsPaginationResponse } from "../../types/types";
 import { BlogsQueryDto } from "../../types/dto";
 import { Injectable } from "@nestjs/common";
-import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
-import { DataSource, ILike, Repository } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
+import { ILike, Repository } from "typeorm";
 import { Blog } from "./blog.entity";
 
 @Injectable()
 export class BlogsQueryRepository {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(Blog) protected blogsRepository: Repository<Blog>
   ) {}
 

@@ -1,42 +1,22 @@
 import { Injectable } from "@nestjs/common";
 import { CreatePostDto } from "../../types/dto";
 import { PostCreateFromBlogInputModelType } from "../../types/input.models";
-import { InjectDataSource } from "@nestjs/typeorm";
-import { DataSource } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { Post } from "./post.entity";
 
 @Injectable()
 export class PostsRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(Post) protected postsRepository: Repository<Post>
+  ) {}
 
   async createPost(newPost: CreatePostDto) {
-    await this.dataSource.query(
-      `
-        INSERT INTO public."Posts"(
-        "id", "title", "shortDescription", "content", "blogId", "blogName", "createdAt", "isVisible")
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
-      `,
-      [
-        newPost.id,
-        newPost.title,
-        newPost.shortDescription,
-        newPost.content,
-        newPost.blogId,
-        newPost.blogName,
-        newPost.createdAt,
-        // newPost.userId,
-        newPost.isVisible,
-      ]
-    );
+    return this.postsRepository.save(newPost);
   }
 
   async deletePost(id: string): Promise<boolean> {
-    await this.dataSource.query(
-      `
-        DELETE FROM public."Posts"
-        WHERE "id" = $1
-      `,
-      [id]
-    );
+    await this.postsRepository.delete({ id: id });
     return true;
   }
 
@@ -44,44 +24,29 @@ export class PostsRepository {
     postId: string,
     postInputModel: PostCreateFromBlogInputModelType
   ): Promise<boolean> {
-    await this.dataSource.query(
-      `
-        UPDATE public."Posts"
-        SET  "title" = $1, 
-             "shortDescription" = $2,
-             "content" = $3
-        WHERE "id" = $4
-        `,
-      [
-        postInputModel.title,
-        postInputModel.shortDescription,
-        postInputModel.content,
-        postId,
-      ]
+    await this.postsRepository.update(
+      { id: postId },
+      {
+        title: postInputModel.title,
+        shortDescription: postInputModel.shortDescription,
+        content: postInputModel.content,
+      }
     );
     return true;
   }
 
-  async updateVisibleStatus(blogId: string, banStatus: boolean) {
-    await this.dataSource.query(
-      `
-        UPDATE public."Posts"
-        SET  "isVisible" = $1
-        WHERE "blogId" = $2
-        `,
-      [!banStatus, blogId]
+  async updateVisibleStatus(
+    blogId: string,
+    banStatus: boolean
+  ): Promise<boolean> {
+    await this.postsRepository.update(
+      { blogId: blogId },
+      { isVisible: !banStatus }
     );
+    return true;
   }
 
   async getPostById(id: string) {
-    const post = await this.dataSource.query(
-      `
-        SELECT "id", "title", "shortDescription", "content", "blogId", "blogName", "createdAt", "isVisible"
-        FROM public."Posts"
-        WHERE "id" = $1
-      `,
-      [id]
-    );
-    return post[0];
+    return this.postsRepository.findOneBy({ id: id });
   }
 }

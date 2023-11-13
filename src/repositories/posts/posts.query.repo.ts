@@ -1,49 +1,25 @@
 import { Injectable } from "@nestjs/common";
 import { PostsForResponse, PostsPaginationResponse } from "../../types/types";
-import { mapPostWithLikes } from "../../helpers/map.post.with.likes";
 import { PaginationDto } from "../../types/dto";
-import { LikesRepository } from "../likes/likes.repo";
-import { InjectDataSource } from "@nestjs/typeorm";
-import { DataSource } from "typeorm";
+import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
+import { DataSource, Repository } from "typeorm";
+import { Post } from "./post.entity";
+import { plugForCreatingPosts } from "../../helpers/plug.for.creating.posts.and.comments";
 
 @Injectable()
 export class PostsQueryRepository {
   constructor(
     @InjectDataSource() protected dataSource: DataSource,
-    protected likesRepository: LikesRepository
+    @InjectRepository(Post) protected postsRepository: Repository<Post>
   ) {}
 
-  async getPostById(
+  async findPostById(
     id: string,
     userId: string | null
   ): Promise<PostsForResponse | null> {
-    const post = await this.dataSource.query(
-      `
-        SELECT "id", "title", "shortDescription", "content", "blogId", "blogName", "createdAt", "isVisible",
-        (
-        SELECT count (*)
-        FROM public."Likes" 
-        WHERE "idOfEntity" = $1 AND "status" = 'Like'
-        ) as "likesCount",
-        (
-        SELECT count (*)
-        FROM public."Likes"
-        WHERE "idOfEntity" = $1 AND "status" = 'Dislike'
-        ) as "dislikesCount",
-        (
-        SELECT "status"
-        FROM public."Likes"
-        WHERE "idOfEntity" = $1 AND "userId" = $2
-        ) as "myStatus",
-        ARRAY (SELECT row_to_json(row) FROM (SELECT "addedAt", "userId", "login" FROM public."Likes" WHERE "idOfEntity" = $1 AND "status" = 'Like' ORDER BY "addedAt" DESC LIMIT 3) row) as "newestLikes"
-        FROM public."Posts"
-        WHERE "id" = $1 AND "isVisible" = true
-      `,
-      [id, userId]
-    );
-    if (!post[0]) return null;
-
-    return mapPostWithLikes(post[0]);
+    const post = await this.postsRepository.findOneBy({ id: id });
+    if (!post) return null;
+    return plugForCreatingPosts(post);
   }
 
   async getPosts(
@@ -55,49 +31,25 @@ export class PostsQueryRepository {
     const sortBy: string = query.sortBy || "createdAt";
     const sortDirection: "asc" | "desc" = query.sortDirection || "desc";
 
-    const items = await this.dataSource.query(
-      `
-        SELECT p."id", p."title", p."shortDescription", p."content", p."blogId", p."blogName", p."createdAt", p."isVisible",
-        (
-        SELECT count (*)
-        FROM public."Likes" l
-        WHERE p."id" = l."idOfEntity" AND l."status" = 'Like'
-        ) as "likesCount",
-        (
-        SELECT count (*)
-        FROM public."Likes" l
-        WHERE p."id" = l."idOfEntity" AND l."status" = 'Dislike'
-        ) as "dislikesCount",
-        (
-        SELECT "status"
-        FROM public."Likes" l
-        WHERE p."id" = l."idOfEntity" AND l."userId" = $3
-        ) as "myStatus",
-        ARRAY (SELECT row_to_json(row) FROM (SELECT "addedAt", "userId", "login" FROM public."Likes" WHERE "idOfEntity" = p.id AND "status" = 'Like' ORDER BY "addedAt" DESC LIMIT 3) row) as "newestLikes"
-        FROM public."Posts" p
-        WHERE "isVisible" = true
-        ORDER BY "${sortBy}" ${sortDirection}
-        OFFSET $1 LIMIT $2
-      `,
-      [(pageNumber - 1) * pageSize, pageSize, userId]
-    );
+    const posts = await this.postsRepository.find({
+      where: { isVisible: true },
+      order: { [sortBy]: sortDirection },
+      skip: (pageNumber - 1) * pageSize,
+      take: pageSize,
+    });
 
-    const itemsWithLikes = items.map((i) => mapPostWithLikes(i));
+    const postsWithLikes = posts.map((i) => plugForCreatingPosts(i));
 
-    const totalCount = await this.dataSource.query(
-      `
-      SELECT count(*)
-      FROM public."Posts"
-      WHERE "isVisible" = true
-      `
-    );
+    const totalCount = await this.postsRepository.count({
+      where: { isVisible: true },
+    });
 
     return {
-      pagesCount: Math.ceil(+totalCount[0].count / pageSize),
+      pagesCount: Math.ceil(totalCount / pageSize),
       page: pageNumber,
       pageSize: pageSize,
-      totalCount: +totalCount[0].count,
-      items: itemsWithLikes,
+      totalCount: totalCount,
+      items: postsWithLikes,
     };
   }
 
@@ -111,50 +63,25 @@ export class PostsQueryRepository {
     const sortBy: string = query.sortBy || "createdAt";
     const sortDirection: "asc" | "desc" = query.sortDirection || "desc";
 
-    const items = await this.dataSource.query(
-      `
-        SELECT p."id", p."title", p."shortDescription", p."content", p."blogId", p."blogName", p."createdAt", p."isVisible",
-        (
-        SELECT count (*)
-        FROM public."Likes" l
-        WHERE p."id" = l."idOfEntity" AND l."status" = 'Like'
-        ) as "likesCount",
-        (
-        SELECT count (*)
-        FROM public."Likes" l
-        WHERE p."id" = l."idOfEntity" AND l."status" = 'Dislike'
-        ) as "dislikesCount",
-        (
-        SELECT "status"
-        FROM public."Likes" l
-        WHERE p."id" = l."idOfEntity" AND l."userId" = $4
-        ) as "myStatus",
-        ARRAY (SELECT row_to_json(row) FROM (SELECT "addedAt", "userId", "login" FROM public."Likes" WHERE "idOfEntity" = p.id AND "status" = 'Like' ORDER BY "addedAt" DESC LIMIT 3) row) as "newestLikes"
-        FROM public."Posts" p 
-        WHERE "blogId" = $1 AND "isVisible" = true
-        ORDER BY "${sortBy}" ${sortDirection}
-        OFFSET $2 LIMIT $3
-      `,
-      [blogId, (pageNumber - 1) * pageSize, pageSize, userId]
-    );
+    const posts = await this.postsRepository.find({
+      where: { blogId: blogId, isVisible: true },
+      order: { [sortBy]: sortDirection },
+      skip: (pageNumber - 1) * pageSize,
+      take: pageSize,
+    });
 
-    const itemsWithLikes = items.map((i) => mapPostWithLikes(i));
+    const postsWithLikes = posts.map((i) => plugForCreatingPosts(i));
 
-    const totalCount = await this.dataSource.query(
-      `
-      SELECT count(*)
-      FROM public."Posts"
-      WHERE "blogId" = $1 AND "isVisible" = true
-      `,
-      [blogId]
-    );
+    const totalCount = await this.postsRepository.count({
+      where: { blogId: blogId, isVisible: true },
+    });
 
     return {
-      pagesCount: Math.ceil(+totalCount[0].count / pageSize),
+      pagesCount: Math.ceil(totalCount / pageSize),
       page: pageNumber,
       pageSize: pageSize,
-      totalCount: +totalCount[0].count,
-      items: itemsWithLikes,
+      totalCount: totalCount,
+      items: postsWithLikes,
     };
   }
 }
