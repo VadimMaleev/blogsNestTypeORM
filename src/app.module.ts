@@ -48,6 +48,7 @@ import { User } from "./repositories/users/user.entity";
 import { RecoveryCode } from "./repositories/recovery.codes/recovery.code.entity";
 import { Device } from "./repositories/devices/device.entity";
 import { Blog } from "./repositories/blogs/blog.entity";
+import { Post } from "./repositories/posts/post.entity";
 
 const useCases = [
   CheckCredentialsUseCase,
@@ -66,7 +67,7 @@ const useCases = [
       autoLoadEntities: true,
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([User, RecoveryCode, Device, Blog]),
+    TypeOrmModule.forFeature([User, RecoveryCode, Device, Blog, Post]),
     CqrsModule,
     ConfigModule.forRoot(),
     ThrottlerModule.forRoot({

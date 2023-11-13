@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import { Blog } from "../blogs/blog.entity";
 
 @Entity("Post")
 export class Post {
@@ -25,4 +26,8 @@ export class Post {
 
   @Column()
   isVisible: boolean;
+
+  @ManyToOne(() => Blog, (b) => b.posts)
+  @JoinColumn()
+  blog: Blog;
 }

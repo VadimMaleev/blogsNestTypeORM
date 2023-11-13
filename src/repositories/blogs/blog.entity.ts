@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
+import { Post } from "../posts/post.entity";
 
 @Entity("Blog")
 export class Blog {
@@ -25,4 +26,7 @@ export class Blog {
 
   @Column({ type: "timestamp with time zone", nullable: true })
   banDate: Date;
+
+  @OneToMany(() => Post, (p) => p.blog)
+  posts: Post[];
 }
