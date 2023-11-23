@@ -1,6 +1,9 @@
 import { Column, Entity, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
 import { RecoveryCode } from "../recovery.codes/recovery.code.entity";
 import { Device } from "../devices/device.entity";
+import { Comment } from "../comments/comment.entity";
+import { LikeForPost } from "../likes/likeForPost.entity";
+import { LikeForComment } from "../likes/likeForComment.entity";
 
 @Entity("User")
 export class User {
@@ -42,4 +45,13 @@ export class User {
 
   @OneToMany(() => Device, (d) => d.user)
   devices: Device[];
+
+  @OneToMany(() => Comment, (c) => c.user)
+  comments: Comment[];
+
+  @OneToMany(() => LikeForPost, (l) => l.user)
+  likesForPost: LikeForPost[];
+
+  @OneToMany(() => LikeForComment, (l) => l.user)
+  likesForComment: LikeForComment[];
 }

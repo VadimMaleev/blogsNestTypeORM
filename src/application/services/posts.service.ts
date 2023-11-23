@@ -4,7 +4,7 @@ import { CreatePostDto, UriParamsForBloggersApi } from "../../types/dto";
 import { v4 as uuidv4 } from "uuid";
 import { PostsRepository } from "../../repositories/posts/posts.repo";
 import { plugForCreatingPosts } from "../../helpers/plug.for.creating.posts.and.comments";
-import { LikesRepository } from "../../repositories/likes/likes.repo";
+import { LikesForCommentsRepository } from "../../repositories/likes/likes.for.comments.repo";
 import { UsersRepository } from "../../repositories/users/users.repo";
 import { BlogsRepository } from "../../repositories/blogs/blogs.repo";
 
@@ -14,7 +14,7 @@ export class PostsService {
     protected blogsRepository: BlogsRepository,
     protected postsRepository: PostsRepository,
     protected usersRepository: UsersRepository,
-    protected likesRepository: LikesRepository
+    protected likesRepository: LikesForCommentsRepository
   ) {}
 
   async createPostForBlog(

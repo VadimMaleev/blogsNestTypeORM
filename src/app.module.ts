@@ -29,7 +29,7 @@ import { ThrottlerModule } from "@nestjs/throttler";
 import { DevicesController } from "./api/public.api/devices/devices.controller";
 import { DevicesService } from "./application/services/devices.service";
 import { JwtRepository } from "./repositories/jwt/jwt.repository";
-import { LikesRepository } from "./repositories/likes/likes.repo";
+import { LikesForCommentsRepository } from "./repositories/likes/likes.for.comments.repo";
 import { ExtractUserIdFromHeadersUseCase } from "./helpers/extract.userId.from.headers";
 import { BlogExistRule } from "./helpers/validator.blogId";
 import { BlogsService } from "./application/services/blogs.service";
@@ -49,6 +49,10 @@ import { RecoveryCode } from "./repositories/recovery.codes/recovery.code.entity
 import { Device } from "./repositories/devices/device.entity";
 import { Blog } from "./repositories/blogs/blog.entity";
 import { Post } from "./repositories/posts/post.entity";
+import { Comment } from "./repositories/comments/comment.entity";
+import { LikeForComment } from "./repositories/likes/likeForComment.entity";
+import { LikeForPost } from "./repositories/likes/likeForPost.entity";
+import { LikesForPostsRepository } from "./repositories/likes/likes.for.posts.repo";
 
 const useCases = [
   CheckCredentialsUseCase,
@@ -67,7 +71,16 @@ const useCases = [
       autoLoadEntities: true,
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([User, RecoveryCode, Device, Blog, Post]),
+    TypeOrmModule.forFeature([
+      User,
+      RecoveryCode,
+      Device,
+      Blog,
+      Post,
+      Comment,
+      LikeForComment,
+      LikeForPost,
+    ]),
     CqrsModule,
     ConfigModule.forRoot(),
     ThrottlerModule.forRoot({
@@ -111,7 +124,8 @@ const useCases = [
     DevicesRepository,
     DevicesQueryRepository,
     JwtRepository,
-    LikesRepository,
+    LikesForCommentsRepository,
+    LikesForPostsRepository,
     BannedUsersForBlogRepository,
     ExtractUserIdFromHeadersUseCase,
     BlogExistRule,

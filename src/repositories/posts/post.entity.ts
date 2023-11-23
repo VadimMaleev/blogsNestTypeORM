@@ -1,5 +1,14 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryColumn,
+} from "typeorm";
 import { Blog } from "../blogs/blog.entity";
+import { Comment } from "../comments/comment.entity";
+import { LikeForPost } from "../likes/likeForPost.entity";
 
 @Entity("Post")
 export class Post {
@@ -30,4 +39,10 @@ export class Post {
   @ManyToOne(() => Blog, (b) => b.posts)
   @JoinColumn()
   blog: Blog;
+
+  @OneToMany(() => Comment, (c) => c.post)
+  comments: Comment[];
+
+  @OneToMany(() => LikeForPost, (l) => l.post)
+  likesForPost: LikeForPost[];
 }

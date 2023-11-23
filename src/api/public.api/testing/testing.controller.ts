@@ -13,11 +13,12 @@ export class TestingController {
       DELETE FROM public."Device";
       DELETE FROM public."RecoveryCode";
       DELETE FROM public."Tokens";
+      DELETE FROM public."LikeForComment";
+      DELETE FROM public."LikeForPost";
+      DELETE FROM public."Comment";
       DELETE FROM public."User";
       DELETE FROM public."Post";
       DELETE FROM public."Blog";
-      DELETE FROM public."Likes";
-      DELETE FROM public."Comments";
       `
     );
     return true;

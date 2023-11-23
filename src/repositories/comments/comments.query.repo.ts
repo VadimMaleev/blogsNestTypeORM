@@ -5,7 +5,7 @@ import {
 import { mapCommentWithLikes } from "../../helpers/map.comment.with.likes";
 import { PaginationDto } from "../../types/dto";
 import { Injectable } from "@nestjs/common";
-import { LikesRepository } from "../likes/likes.repo";
+import { LikesForCommentsRepository } from "../likes/likes.for.comments.repo";
 import { InjectDataSource } from "@nestjs/typeorm";
 import { DataSource } from "typeorm";
 
@@ -13,7 +13,7 @@ import { DataSource } from "typeorm";
 export class CommentsQueryRepository {
   constructor(
     @InjectDataSource() protected dataSource: DataSource,
-    protected likesRepository: LikesRepository
+    protected likesRepository: LikesForCommentsRepository
   ) {}
 
   async getCommentById(
@@ -44,7 +44,6 @@ export class CommentsQueryRepository {
       `,
       [id, userId]
     );
-    console.log(comment);
     return mapCommentWithLikes(comment[0]);
   }
 

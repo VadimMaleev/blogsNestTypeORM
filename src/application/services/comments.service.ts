@@ -1,19 +1,19 @@
-import { HttpException, Injectable } from '@nestjs/common';
-import { CommentsRepository } from '../../repositories/comments/comments.repo';
-import { v4 as uuidv4 } from 'uuid';
-import { CreateCommentDto } from '../../types/dto';
-import { CommentsForResponse } from '../../types/types';
-import { LikesRepository } from '../../repositories/likes/likes.repo';
-import { BannedUsersForBlogRepository } from '../../repositories/users/banned.users.for.blog.repo';
-import { UsersRepository } from '../../repositories/users/users.repo';
+import { HttpException, Injectable } from "@nestjs/common";
+import { CommentsRepository } from "../../repositories/comments/comments.repo";
+import { v4 as uuidv4 } from "uuid";
+import { CreateCommentDto } from "../../types/dto";
+import { CommentsForResponse } from "../../types/types";
+import { LikesForCommentsRepository } from "../../repositories/likes/likes.for.comments.repo";
+import { BannedUsersForBlogRepository } from "../../repositories/users/banned.users.for.blog.repo";
+import { UsersRepository } from "../../repositories/users/users.repo";
 
 @Injectable()
 export class CommentsService {
   constructor(
     protected commentsRepository: CommentsRepository,
     protected usersRepository: UsersRepository,
-    protected likesRepository: LikesRepository,
-    protected bannedUsersForBlogRepository: BannedUsersForBlogRepository,
+    protected likesForCommentsRepository: LikesForCommentsRepository,
+    protected bannedUsersForBlogRepository: BannedUsersForBlogRepository
   ) {}
   async deleteCommentById(id: string): Promise<boolean> {
     return await this.commentsRepository.deleteComment(id);
@@ -24,15 +24,15 @@ export class CommentsService {
     content: string,
     userId: string,
     login: string,
-    blogId: string,
+    blogId: string
   ): Promise<CommentsForResponse> {
     const isBannedUser =
       await this.bannedUsersForBlogRepository.findBannedUserByUserIdAndBlogId(
         userId,
-        blogId,
+        blogId
       );
 
-    if (isBannedUser) throw new HttpException('You Banned', 403);
+    if (isBannedUser) throw new HttpException("You Banned", 403);
 
     const newComment = new CreateCommentDto(
       uuidv4(),
@@ -41,7 +41,7 @@ export class CommentsService {
       login,
       new Date(),
       postId,
-      true,
+      true
     );
     return await this.commentsRepository.createComment(newComment);
   }
@@ -52,11 +52,11 @@ export class CommentsService {
 
   async makeLikeOrUnlike(id: string, userId: string, likeStatus: string) {
     const user = await this.usersRepository.findUserById(userId);
-    return this.likesRepository.makeLikeOrUnlike(
+    return this.likesForCommentsRepository.makeLikeOrUnlike(
       id,
       userId,
       user.login,
-      likeStatus,
+      likeStatus
     );
   }
 }

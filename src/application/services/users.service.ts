@@ -14,7 +14,7 @@ import { EmailAdapter } from "../../adapters/email-adapter";
 import { DevicesRepository } from "../../repositories/devices/devices.repository";
 import { PostsRepository } from "../../repositories/posts/posts.repo";
 import { CommentsRepository } from "../../repositories/comments/comments.repo";
-import { LikesRepository } from "../../repositories/likes/likes.repo";
+import { LikesForCommentsRepository } from "../../repositories/likes/likes.for.comments.repo";
 import { AuthService } from "./auth.service";
 import { BannedUsersForBlogRepository } from "../../repositories/users/banned.users.for.blog.repo";
 import { BlogsRepository } from "../../repositories/blogs/blogs.repo";
@@ -27,7 +27,7 @@ export class UsersService {
     protected devicesRepository: DevicesRepository,
     protected postsRepository: PostsRepository,
     protected commentsRepository: CommentsRepository,
-    protected likesRepository: LikesRepository,
+    protected likesRepository: LikesForCommentsRepository,
     protected authService: AuthService,
     protected blogsRepository: BlogsRepository,
     protected bannedUsersForBlogRepository: BannedUsersForBlogRepository
