@@ -105,9 +105,6 @@ export class PostsQueryRepository {
       .offset(pageNumber - 1)
       .limit(pageSize)
       .getRawMany();
-    console.log();
-    console.log(posts);
-
     const postsWithLikes = posts.map((i) => mapPostWithLikes(i));
 
     const totalCount = await this.postsRepository.count({
@@ -165,7 +162,7 @@ export class PostsQueryRepository {
       .addSelect(
         `ARRAY (SELECT row_to_json(row) FROM (SELECT "addedAt", "userId", "login" FROM public."LikeForPost" WHERE "postId" = p.id AND "status" = 'Like' ORDER BY "addedAt" DESC LIMIT 3) row) as "newestLikes"`
       )
-      .where("blogId = :blogId", { blogId })
+      .where(`"blogId" = :blogId`, { blogId })
       .andWhere(`"isVisible" = true`)
       .orderBy(`"${sortBy}"`, sortDirection as "ASC" | "DESC")
       .offset(pageNumber - 1)

@@ -1,52 +1,28 @@
 import { Injectable } from "@nestjs/common";
 import { CreateCommentDto } from "../../types/dto";
 import { plugForCreatingComment } from "../../helpers/plug.for.creating.posts.and.comments";
-import { InjectDataSource } from "@nestjs/typeorm";
-import { DataSource } from "typeorm";
+import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
+import { DataSource, Repository } from "typeorm";
+import { Comment } from "./comment.entity";
 
 @Injectable()
 export class CommentsRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(Comment) protected commentsRepository: Repository<Comment>
+  ) {}
   async deleteComment(id: string): Promise<boolean> {
-    await this.dataSource.query(
-      `
-      DELETE FROM public."Comments"
-      WHERE "id" = $1
-      `,
-      [id]
-    );
+    await this.commentsRepository.delete({ id: id });
     return true;
   }
 
   async createComment(newComment: CreateCommentDto) {
-    await this.dataSource.query(
-      `
-        INSERT INTO public."Comments"(
-        "id", "content", "userId", "userLogin", "createdAt", "postId", "isVisible")
-        VALUES ($1, $2, $3, $4, $5, $6, $7);
-      `,
-      [
-        newComment.id,
-        newComment.content,
-        newComment.userId,
-        newComment.userLogin,
-        newComment.createdAt,
-        newComment.postId,
-        newComment.isVisible,
-      ]
-    );
+    await this.commentsRepository.save(newComment);
     return plugForCreatingComment(newComment);
   }
 
   async updateComment(id: string, content: string): Promise<boolean> {
-    await this.dataSource.query(
-      `
-      UPDATE public."Comments"
-      SET "content" = $1
-      WHERE "id" = $2
-      `,
-      [content, id]
-    );
+    await this.commentsRepository.update({ id: id }, { content: content });
     return true;
   }
 
@@ -58,14 +34,6 @@ export class CommentsRepository {
   // }
 
   async findCommentById(id: string) {
-    const comment = await this.dataSource.query(
-      `
-      SELECT "id", "content", "userId", "userLogin", "createdAt", "postId", "isVisible"
-      FROM public."Comments"
-      WHERE "id" = $1
-      `,
-      [id]
-    );
-    return comment[0];
+    return this.commentsRepository.findOneBy({ id: id });
   }
 }
