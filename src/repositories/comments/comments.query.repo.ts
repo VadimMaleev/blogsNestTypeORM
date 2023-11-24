@@ -65,7 +65,7 @@ export class CommentsQueryRepository {
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
     const sortBy: string = query.sortBy || "createdAt";
-    const sortDirection = query.sortDirection.toUpperCase() || "DESC";
+    const sortDirection = query.sortDirection || "DESC";
 
     const comments = await this.commentsRepository
       .createQueryBuilder("c")
