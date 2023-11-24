@@ -4,9 +4,9 @@ import { CreatePostDto, UriParamsForBloggersApi } from "../../types/dto";
 import { v4 as uuidv4 } from "uuid";
 import { PostsRepository } from "../../repositories/posts/posts.repo";
 import { plugForCreatingPosts } from "../../helpers/plug.for.creating.posts.and.comments";
-import { LikesForCommentsRepository } from "../../repositories/likes/likes.for.comments.repo";
 import { UsersRepository } from "../../repositories/users/users.repo";
 import { BlogsRepository } from "../../repositories/blogs/blogs.repo";
+import { LikesForPostsRepository } from "../../repositories/likes/likes.for.posts.repo";
 
 @Injectable()
 export class PostsService {
@@ -14,7 +14,7 @@ export class PostsService {
     protected blogsRepository: BlogsRepository,
     protected postsRepository: PostsRepository,
     protected usersRepository: UsersRepository,
-    protected likesRepository: LikesForCommentsRepository
+    protected likesForPostsRepository: LikesForPostsRepository
   ) {}
 
   async createPostForBlog(
@@ -65,7 +65,7 @@ export class PostsService {
 
   async makeLikeOrUnlike(id: string, userId: string, likeStatus: string) {
     const user = await this.usersRepository.findUserById(userId);
-    return this.likesRepository.makeLikeOrUnlike(
+    return this.likesForPostsRepository.makeLikeOrUnlike(
       id,
       userId,
       user.login,

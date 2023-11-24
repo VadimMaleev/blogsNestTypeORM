@@ -53,8 +53,8 @@ export class CommentsQueryRepository {
       )
       .where("c.id = :id", { id: id })
       .getRawMany();
-
-    return mapCommentWithLikes(comment);
+    if (!comment[0]) return null;
+    return mapCommentWithLikes(comment[0]);
   }
 
   async getCommentsForPost(
