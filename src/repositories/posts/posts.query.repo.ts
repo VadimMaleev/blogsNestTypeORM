@@ -4,7 +4,6 @@ import { PaginationDto } from "../../types/dto";
 import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { DataSource, Repository } from "typeorm";
 import { Post } from "./post.entity";
-import { plugForCreatingPosts } from "../../helpers/plug.for.creating.posts.and.comments";
 import { mapPostWithLikes } from "../../helpers/map.post.with.likes";
 import { LikeForPost } from "../likes/likeForPost.entity";
 
@@ -169,7 +168,7 @@ export class PostsQueryRepository {
       .limit(pageSize)
       .getRawMany();
 
-    const postsWithLikes = posts.map((i) => plugForCreatingPosts(i));
+    const postsWithLikes = posts.map((i) => mapPostWithLikes(i));
 
     const totalCount = await this.postsRepository.count({
       where: { blogId: blogId, isVisible: true },
