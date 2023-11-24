@@ -5,46 +5,56 @@ import {
 import { mapCommentWithLikes } from "../../helpers/map.comment.with.likes";
 import { PaginationDto } from "../../types/dto";
 import { Injectable } from "@nestjs/common";
-import { LikesForCommentsRepository } from "../likes/likes.for.comments.repo";
-import { InjectDataSource } from "@nestjs/typeorm";
-import { DataSource } from "typeorm";
+import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
+import { DataSource, Repository } from "typeorm";
+import { LikeForComment } from "../likes/likeForComment.entity";
+import { Comment } from "./comment.entity";
 
 @Injectable()
 export class CommentsQueryRepository {
   constructor(
     @InjectDataSource() protected dataSource: DataSource,
-    protected likesRepository: LikesForCommentsRepository
+    @InjectRepository(Comment)
+    protected commentsRepository: Repository<Comment>
   ) {}
 
   async getCommentById(
     id: string,
     userId: string | null
   ): Promise<CommentsForResponse | null> {
-    const comment = await this.dataSource.query(
-      `
-        SELECT "id", "content", "userId", "userLogin", "createdAt", "postId", "isVisible",
-        (
-        SELECT count (*)
-        FROM public."Likes"
-        WHERE "idOfEntity" = $1 AND "status" = 'Like'
-        ) as "likesCount",
-        (
-        SELECT count (*)
-        FROM public."Likes"
-        WHERE "idOfEntity" = $1 AND "status" = 'Dislike'
-        ) as "dislikesCount",
-        (
-        SELECT "status"
-        FROM public."Likes"
-        WHERE "idOfEntity" = $1 AND "userId" = $2
-        ) as "myStatus"
-        
-        FROM public."Comments"
-        WHERE "id" = $1
-      `,
-      [id, userId]
-    );
-    return mapCommentWithLikes(comment[0]);
+    const comment = await this.commentsRepository
+      .createQueryBuilder("c")
+      .addSelect(
+        (qb) =>
+          qb
+            .select("count(*)")
+            .from(LikeForComment, "lfc")
+            .where("c.id = lfc.commentId")
+            .andWhere("lfc.status = 'Like'"),
+        "likesCount"
+      )
+      .addSelect(
+        (qb) =>
+          qb
+            .select("count(*)")
+            .from(LikeForComment, "lfc")
+            .where("c.id = lfc.commentId")
+            .andWhere("lfc.status = 'Dislike'"),
+        "dislikesCount"
+      )
+      .addSelect(
+        (qb) =>
+          qb
+            .select("status")
+            .from(LikeForComment, "lfc")
+            .where("c.id = lfc.commentId")
+            .andWhere("lfc.userId = :userId", { userId: userId }),
+        "myStatus"
+      )
+      .where("c.id = :id", { id: id })
+      .getRawMany();
+
+    return mapCommentWithLikes(comment);
   }
 
   async getCommentsForPost(
@@ -55,50 +65,54 @@ export class CommentsQueryRepository {
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
     const sortBy: string = query.sortBy || "createdAt";
-    const sortDirection: "asc" | "desc" = query.sortDirection || "desc";
+    const sortDirection = query.sortDirection.toUpperCase() || "DESC";
 
-    const comments = await this.dataSource.query(
-      `
-        SELECT c.*,
-        (
-        SELECT count (*)
-        FROM public."Likes" l
-        WHERE c."id" = l."idOfEntity" AND l."status" = 'Like'
-        ) as "likesCount",
-        (
-        SELECT count (*)
-        FROM public."Likes" l
-        WHERE c."id" = l."idOfEntity" AND l."status" = 'Dislike'
-        ) as "dislikesCount",
-        (
-        SELECT "status"
-        FROM public."Likes" l
-        WHERE c."id" = l."idOfEntity" AND l."userId" = $4
-        ) as "myStatus"
-        
-        FROM public."Comments" c
-        WHERE "postId" = $1
-        ORDER BY "${sortBy}" ${sortDirection}
-        OFFSET $2 LIMIT $3
-      `,
-      [id, (pageNumber - 1) * pageSize, pageSize, userId]
-    );
+    const comments = await this.commentsRepository
+      .createQueryBuilder("c")
+      .addSelect(
+        (qb) =>
+          qb
+            .select("count(*)")
+            .from(LikeForComment, "lfc")
+            .where("c.id = lfc.commentId")
+            .andWhere("lfc.status = 'Like'"),
+        "likesCount"
+      )
+      .addSelect(
+        (qb) =>
+          qb
+            .select("count(*)")
+            .from(LikeForComment, "lfc")
+            .where("c.id = lfc.commentId")
+            .andWhere("lfc.status = 'Dislike'"),
+        "dislikesCount"
+      )
+      .addSelect(
+        (qb) =>
+          qb
+            .select("status")
+            .from(LikeForComment, "lfc")
+            .where("c.id = lfc.commentId")
+            .andWhere("lfc.userId = :userId", { userId: userId }),
+        "myStatus"
+      )
+      .where("c.postId = :postId", { postId: id })
+      .orderBy(`"${sortBy}"`, sortDirection as "ASC" | "DESC")
+      .offset(pageNumber - 1)
+      .limit(pageSize)
+      .getRawMany();
+
     const commentsWithLikes = comments.map((i) => mapCommentWithLikes(i));
 
-    const totalCount = await this.dataSource.query(
-      `
-      SELECT count(*)
-      FROM public."Comments"
-      WHERE "postId" = $1
-      `,
-      [id]
-    );
+    const totalCount = await this.commentsRepository.count({
+      where: { postId: id },
+    });
 
     return {
-      pagesCount: Math.ceil(+totalCount[0].count / pageSize),
+      pagesCount: Math.ceil(totalCount / pageSize),
       page: pageNumber,
       pageSize: pageSize,
-      totalCount: +totalCount[0].count,
+      totalCount: totalCount,
       items: commentsWithLikes,
     };
   }

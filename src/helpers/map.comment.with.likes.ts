@@ -1,16 +1,16 @@
-import { CommentsForResponse } from '../types/types';
+import { CommentsForResponse } from "../types/types";
 
 export const mapCommentWithLikes = (comment): CommentsForResponse => ({
-  id: comment.id,
-  content: comment.content,
+  id: comment.c_id,
+  content: comment.c_content,
   commentatorInfo: {
-    userId: comment.userId,
-    userLogin: comment.userLogin,
+    userId: comment.c_userId,
+    userLogin: comment.c_userLogin,
   },
-  createdAt: comment.createdAt,
+  createdAt: comment.c_createdAt,
   likesInfo: {
     likesCount: +comment.likesCount,
     dislikesCount: +comment.dislikesCount,
-    myStatus: comment.myStatus ? comment.myStatus : 'None',
+    myStatus: comment.myStatus ? comment.myStatus : "None",
   },
 });

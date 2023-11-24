@@ -5,6 +5,8 @@ import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { DataSource, Repository } from "typeorm";
 import { Post } from "./post.entity";
 import { plugForCreatingPosts } from "../../helpers/plug.for.creating.posts.and.comments";
+import { mapPostWithLikes } from "../../helpers/map.post.with.likes";
+import { LikeForPost } from "../likes/likeForPost.entity";
 
 @Injectable()
 export class PostsQueryRepository {
@@ -17,9 +19,43 @@ export class PostsQueryRepository {
     id: string,
     userId: string | null
   ): Promise<PostsForResponse | null> {
-    const post = await this.postsRepository.findOneBy({ id: id });
-    if (!post) return null;
-    return plugForCreatingPosts(post);
+    const post = await this.postsRepository
+      .createQueryBuilder("p")
+      .addSelect(
+        (qb) =>
+          qb
+            .select("count(*)")
+            .from(LikeForPost, "lfp")
+            .where("p.id = lfp.postId")
+            .andWhere("lfp.status = 'Like'"),
+        "likesCount"
+      )
+      .addSelect(
+        (qb) =>
+          qb
+            .select("count(*)")
+            .from(LikeForPost, "lfp")
+            .where("p.id = lfp.postId")
+            .andWhere("lfp.status = 'Dislike'"),
+        "dislikesCount"
+      )
+      .addSelect(
+        (qb) =>
+          qb
+            .select("status")
+            .from(LikeForPost, "lfp")
+            .where("p.id = lfp.postId")
+            .andWhere("lfp.userId = :userId", { userId: userId }),
+        "myStatus"
+      )
+      .addSelect(
+        `ARRAY (SELECT row_to_json(row) FROM (SELECT "addedAt", "userId", "login" FROM public."LikeForPost" WHERE "postId" = '${id}' AND "status" = 'Like' ORDER BY "addedAt" DESC LIMIT 3) row) as "newestLikes"`
+      )
+      .where("p.id = :id", { id: id })
+      .andWhere(`"isVisible" = true`)
+      .getRawMany();
+    if (!post[0]) return null;
+    return mapPostWithLikes(post[0]);
   }
 
   async getPosts(
@@ -29,16 +65,50 @@ export class PostsQueryRepository {
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
     const sortBy: string = query.sortBy || "createdAt";
-    const sortDirection: "asc" | "desc" = query.sortDirection || "desc";
+    const sortDirection = query.sortDirection || "DESC";
 
-    const posts = await this.postsRepository.find({
-      where: { isVisible: true },
-      order: { [sortBy]: sortDirection },
-      skip: (pageNumber - 1) * pageSize,
-      take: pageSize,
-    });
+    const posts = await this.postsRepository
+      .createQueryBuilder("p")
+      .addSelect(
+        (qb) =>
+          qb
+            .select("count(*)")
+            .from(LikeForPost, "lfp")
+            .where("p.id = lfp.postId")
+            .andWhere("lfp.status = 'Like'"),
+        "likesCount"
+      )
+      .addSelect(
+        (qb) =>
+          qb
+            .select("count(*)")
+            .from(LikeForPost, "lfp")
+            .where("p.id = lfp.postId")
+            .andWhere("lfp.status = 'Dislike'"),
+        "dislikesCount"
+      )
+      .addSelect(
+        (qb) =>
+          qb
+            .select("status")
+            .from(LikeForPost, "lfp")
+            .where("p.id = lfp.postId")
+            .andWhere("lfp.userId = :userId", { userId: userId }),
+        "myStatus"
+      )
+      .addSelect(
+        `ARRAY (SELECT row_to_json(row) FROM (SELECT "addedAt", "userId", "login" FROM public."LikeForPost" WHERE "postId" = p.id AND "status" = 'Like' ORDER BY "addedAt" DESC LIMIT 3) row) as "newestLikes"`
+      )
 
-    const postsWithLikes = posts.map((i) => plugForCreatingPosts(i));
+      .where(`"isVisible" = true`)
+      .orderBy(`"${sortBy}"`, sortDirection as "ASC" | "DESC")
+      .offset(pageNumber - 1)
+      .limit(pageSize)
+      .getRawMany();
+    console.log();
+    console.log(posts);
+
+    const postsWithLikes = posts.map((i) => mapPostWithLikes(i));
 
     const totalCount = await this.postsRepository.count({
       where: { isVisible: true },
@@ -61,14 +131,46 @@ export class PostsQueryRepository {
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
     const sortBy: string = query.sortBy || "createdAt";
-    const sortDirection: "asc" | "desc" = query.sortDirection || "desc";
+    const sortDirection = query.sortDirection || "DESC";
 
-    const posts = await this.postsRepository.find({
-      where: { blogId: blogId, isVisible: true },
-      order: { [sortBy]: sortDirection },
-      skip: (pageNumber - 1) * pageSize,
-      take: pageSize,
-    });
+    const posts = await this.postsRepository
+      .createQueryBuilder("p")
+      .addSelect(
+        (qb) =>
+          qb
+            .select("count(*)")
+            .from(LikeForPost, "lfp")
+            .where("p.id = lfp.postId")
+            .andWhere("lfp.status = 'Like'"),
+        "likesCount"
+      )
+      .addSelect(
+        (qb) =>
+          qb
+            .select("count(*)")
+            .from(LikeForPost, "lfp")
+            .where("p.id = lfp.postId")
+            .andWhere("lfp.status = 'Dislike'"),
+        "dislikesCount"
+      )
+      .addSelect(
+        (qb) =>
+          qb
+            .select("status")
+            .from(LikeForPost, "lfp")
+            .where("p.id = lfp.postId")
+            .andWhere("lfp.userId = :userId", { userId: userId }),
+        "myStatus"
+      )
+      .addSelect(
+        `ARRAY (SELECT row_to_json(row) FROM (SELECT "addedAt", "userId", "login" FROM public."LikeForPost" WHERE "postId" = p.id AND "status" = 'Like' ORDER BY "addedAt" DESC LIMIT 3) row) as "newestLikes"`
+      )
+      .where("blogId = :blogId", { blogId })
+      .andWhere(`"isVisible" = true`)
+      .orderBy(`"${sortBy}"`, sortDirection as "ASC" | "DESC")
+      .offset(pageNumber - 1)
+      .limit(pageSize)
+      .getRawMany();
 
     const postsWithLikes = posts.map((i) => plugForCreatingPosts(i));
 
