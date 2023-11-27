@@ -98,7 +98,7 @@ export class CommentsQueryRepository {
       )
       .where("c.postId = :postId", { postId: id })
       .orderBy(`"${sortBy}"`, sortDirection as "ASC" | "DESC")
-      .offset(pageNumber - 1)
+      .offset((pageNumber - 1) * pageSize)
       .limit(pageSize)
       .getRawMany();
 

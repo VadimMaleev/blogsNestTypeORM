@@ -101,7 +101,7 @@ export class PostsQueryRepository {
 
       .where(`"isVisible" = true`)
       .orderBy(`"${sortBy}"`, sortDirection as "ASC" | "DESC")
-      .offset(pageNumber - 1)
+      .offset((pageNumber - 1) * pageSize)
       .limit(pageSize)
       .getRawMany();
     const postsWithLikes = posts.map((i) => mapPostWithLikes(i));
@@ -164,7 +164,7 @@ export class PostsQueryRepository {
       .where(`"blogId" = :blogId`, { blogId })
       .andWhere(`"isVisible" = true`)
       .orderBy(`"${sortBy}"`, sortDirection as "ASC" | "DESC")
-      .offset(pageNumber - 1)
+      .offset((pageNumber - 1) * pageSize)
       .limit(pageSize)
       .getRawMany();
 
