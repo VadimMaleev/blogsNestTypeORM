@@ -1,22 +1,17 @@
 //Query
-export class PaginationDto {
-  pageNumber: string;
-  pageSize: string;
-  sortBy: string;
-  sortDirection: "desc" | "asc";
-}
+import { PaginationInputModel } from "./input.models";
 
-export class BlogsQueryDto extends PaginationDto {
+export class BlogsQueryDto extends PaginationInputModel {
   searchNameTerm: string;
 }
 
-export class UsersQueryDto extends PaginationDto {
+export class UsersQueryDto extends PaginationInputModel {
   searchLoginTerm: string;
   searchEmailTerm: string;
   banStatus: string;
 }
 
-export class LoginQueryDto extends PaginationDto {
+export class LoginQueryDto extends PaginationInputModel {
   searchLoginTerm: string;
 }
 

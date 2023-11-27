@@ -14,16 +14,12 @@ import {
 } from "@nestjs/common";
 import { BlogsQueryRepository } from "../../../repositories/blogs/blogs.query.repo";
 import { BlogsService } from "../../../application/services/blogs.service";
-import {
-  BindBlogToUserParams,
-  BlogsQueryDto,
-  PaginationDto,
-  UriParamsForBloggersApi,
-} from "../../../types/dto";
+import { BlogsQueryDto, UriParamsForBloggersApi } from "../../../types/dto";
 import { BasicAuthGuard } from "../../../guards/basic.auth.guard";
 import {
   BanBlogInputModel,
   BlogCreateInputModelType,
+  PaginationInputModel,
   PostCreateFromBlogInputModelType,
 } from "../../../types/input.models";
 import { BlogsRepository } from "../../../repositories/blogs/blogs.repo";
@@ -117,7 +113,7 @@ export class BlogsSAController {
   @UseGuards(BasicAuthGuard)
   async getPostsForBlog(
     @Param("id") id: string,
-    @Query() query: PaginationDto,
+    @Query() query: PaginationInputModel,
     @Request() req
   ) {
     let userId: string | null = null;
@@ -126,7 +122,7 @@ export class BlogsSAController {
     }
     const blog = await this.blogsRepository.getBlogById(id);
     if (!blog) throw new NotFoundException("Blog not found");
-    return this.postsQueryRepository.getPostsForBlog(blog.id, query, userId);
+    return this.postsQueryRepository.getPosts(query, userId, blog.id);
   }
 
   @Put(":blogId/posts/:postId")

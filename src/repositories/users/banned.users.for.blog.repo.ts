@@ -45,7 +45,7 @@ export class BannedUsersForBlogRepository {
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
     const sortBy: string = query.sortBy || "banDate";
-    const sortDirection: "asc" | "desc" = query.sortDirection || "desc";
+    const sortDirection = query.sortDirection || "DESC";
     const loginSearchTerm: string = query.searchLoginTerm || "";
 
     let filter = `"blogId" = '${blogId}'`;

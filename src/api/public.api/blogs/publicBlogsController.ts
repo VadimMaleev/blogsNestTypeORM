@@ -7,10 +7,11 @@ import {
   Request,
 } from "@nestjs/common";
 import { BlogsQueryRepository } from "../../../repositories/blogs/blogs.query.repo";
-import { BlogsQueryDto, PaginationDto } from "../../../types/dto";
+import { BlogsQueryDto } from "../../../types/dto";
 import { PostsQueryRepository } from "../../../repositories/posts/posts.query.repo";
 import { ExtractUserIdFromHeadersUseCase } from "../../../helpers/extract.userId.from.headers";
 import { BlogsRepository } from "../../../repositories/blogs/blogs.repo";
+import { PaginationInputModel } from "../../../types/input.models";
 
 @Controller("blogs")
 export class PublicBlogsController {
@@ -36,7 +37,7 @@ export class PublicBlogsController {
   @Get(":id/posts")
   async getPostsForBlog(
     @Param("id") id: string,
-    @Query() query: PaginationDto,
+    @Query() query: PaginationInputModel,
     @Request() req
   ) {
     let userId: string | null = null;
@@ -45,6 +46,6 @@ export class PublicBlogsController {
     }
     const blog = await this.blogsRepository.getBlogById(id);
     if (!blog) throw new NotFoundException("Blog not found");
-    return this.postsQueryRepository.getPostsForBlog(blog.id, query, userId);
+    return this.postsQueryRepository.getPosts(query, userId, blog.id);
   }
 }

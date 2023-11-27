@@ -1,7 +1,14 @@
-import { IsBoolean, IsEnum, Length, Matches } from 'class-validator';
-import { LikesStatusEnum } from './types';
-import { Transform, TransformFnParams } from 'class-transformer';
-import { BlogExists } from '../helpers/validator.blogId';
+import {
+  IsBoolean,
+  IsEnum,
+  IsOptional,
+  Length,
+  Matches,
+} from "class-validator";
+import { LikesStatusEnum, SortDirectionEnum } from "./types";
+import { Transform, TransformFnParams } from "class-transformer";
+import { BlogExists } from "../helpers/validator.blogId";
+
 
 export class BlogCreateInputModelType {
   @Transform(({ value }: TransformFnParams) => value?.trim())
@@ -116,4 +123,14 @@ export class BanUserForBlogInputModel {
 
   @BlogExists()
   blogId: string;
+}
+
+export class PaginationInputModel {
+  pageNumber: string;
+  pageSize: string;
+  sortBy: string;
+  @IsOptional()
+  @IsEnum(SortDirectionEnum)
+  @Transform(({ value }: TransformFnParams) => value?.toUpperCase())
+  sortDirection: string;
 }

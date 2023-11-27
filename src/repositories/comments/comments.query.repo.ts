@@ -3,12 +3,12 @@ import {
   CommentsPaginationResponse,
 } from "../../types/types";
 import { mapCommentWithLikes } from "../../helpers/map.comment.with.likes";
-import { PaginationDto } from "../../types/dto";
 import { Injectable } from "@nestjs/common";
 import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { DataSource, Repository } from "typeorm";
 import { LikeForComment } from "../likes/likeForComment.entity";
 import { Comment } from "./comment.entity";
+import { PaginationInputModel } from "../../types/input.models";
 
 @Injectable()
 export class CommentsQueryRepository {
@@ -59,15 +59,13 @@ export class CommentsQueryRepository {
 
   async getCommentsForPost(
     id: string,
-    query: PaginationDto,
+    query: PaginationInputModel,
     userId: string | null
   ): Promise<CommentsPaginationResponse> {
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
     const sortBy: string = query.sortBy || "createdAt";
-    const sortDirection = query.sortDirection
-      ? query.sortDirection.toUpperCase()
-      : "DESC";
+    const sortDirection = query.sortDirection || "DESC";
 
     const comments = await this.commentsRepository
       .createQueryBuilder("c")

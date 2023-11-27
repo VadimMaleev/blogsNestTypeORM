@@ -14,10 +14,10 @@ import {
 import {
   CommentCreateInputModel,
   LikeStatusInputModel,
+  PaginationInputModel,
 } from "../../../types/input.models";
 import { PostsService } from "../../../application/services/posts.service";
 import { PostsQueryRepository } from "../../../repositories/posts/posts.query.repo";
-import { PaginationDto } from "../../../types/dto";
 import { CommentsQueryRepository } from "../../../repositories/comments/comments.query.repo";
 import { JwtAuthGuard } from "../../../guards/jwt.auth.guard";
 import { CommentsService } from "../../../application/services/comments.service";
@@ -51,7 +51,7 @@ export class PublicPostsController {
   }
 
   @Get()
-  async getPosts(@Query() query: PaginationDto, @Request() req) {
+  async getPosts(@Query() query: PaginationInputModel, @Request() req) {
     let userId: string | null = null;
     if (req.headers.authorization) {
       userId = await this.extractUserIdFromHeadersUseCase.execute(req);
@@ -62,7 +62,7 @@ export class PublicPostsController {
   @Get(":id/comments")
   async getCommentsForPost(
     @Param("id") id: string,
-    @Query() query: PaginationDto,
+    @Query() query: PaginationInputModel,
     @Request() req
   ) {
     let userId: string | null = null;

@@ -16,7 +16,7 @@ export class UsersQueryRepository {
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
     const sortBy: string = query.sortBy || "createdAt";
-    const sortDirection: "asc" | "desc" = query.sortDirection || "desc";
+    const sortDirection = query.sortDirection || "DESC";
     const login: string = query.searchLoginTerm || "";
     const email: string = query.searchEmailTerm || "";
     const banStatus: string = query.banStatus || "all";

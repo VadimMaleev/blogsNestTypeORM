@@ -115,7 +115,12 @@ export type BannedUserForBlog = {
 
 //Enums
 export enum LikesStatusEnum {
-  Like = 'Like',
-  Dislike = 'Dislike',
-  None = 'None',
+  Like = "Like",
+  Dislike = "Dislike",
+  None = "None",
+}
+
+export enum SortDirectionEnum {
+  asc = "ASC",
+  desc = "DESC",
 }
