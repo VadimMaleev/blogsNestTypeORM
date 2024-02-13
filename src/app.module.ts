@@ -53,6 +53,11 @@ import { Comment } from "./repositories/comments/comment.entity";
 import { LikeForComment } from "./repositories/likes/likeForComment.entity";
 import { LikeForPost } from "./repositories/likes/likeForPost.entity";
 import { LikesForPostsRepository } from "./repositories/likes/likes.for.posts.repo";
+import { Question } from "./repositories/questions/question.entity";
+import { QuizSAController } from "./api/sa.api/quiz/quizSAController";
+import { QuizQuestionsService } from "./application/services/quizQuestionsService";
+import { QuestionsRepository } from "./repositories/questions/questions.repository";
+import { QuestionsQueryRepository } from "./repositories/questions/questions.query.repository";
 
 const useCases = [
   CheckCredentialsUseCase,
@@ -80,6 +85,7 @@ const useCases = [
       Comment,
       LikeForComment,
       LikeForPost,
+      Question,
     ]),
     CqrsModule,
     ConfigModule.forRoot(),
@@ -101,6 +107,7 @@ const useCases = [
     BloggersUsersController,
     BlogsSAController,
     UsersSAController,
+    QuizSAController,
   ],
   providers: [
     AppService,
@@ -129,6 +136,9 @@ const useCases = [
     BannedUsersForBlogRepository,
     ExtractUserIdFromHeadersUseCase,
     BlogExistRule,
+    QuizQuestionsService,
+    QuestionsRepository,
+    QuestionsQueryRepository,
     ...useCases,
   ],
 })

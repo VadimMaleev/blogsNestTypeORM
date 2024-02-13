@@ -15,6 +15,11 @@ export class LoginQueryDto extends PaginationInputModel {
   searchLoginTerm: string;
 }
 
+export class QuestionsQueryDto extends PaginationInputModel {
+  bodySearchTerm: string;
+  publishedStatus: string;
+}
+
 //DeleteParams
 export class UriParamsForBloggersApi {
   blogId: string;
@@ -100,6 +105,17 @@ export class CreateDeviceDto {
     public title: string,
     public userId: string,
     public lastActiveDate: Date
+  ) {}
+}
+
+export class CreateQuestionDto {
+  constructor(
+    public id: string,
+    public body: string,
+    public correctAnswers: string[],
+    public published: boolean,
+    public createdAt: Date,
+    public updatedAt: Date
   ) {}
 }
 

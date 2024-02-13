@@ -1,7 +1,9 @@
 import {
+  IsArray,
   IsBoolean,
   IsEnum,
   IsOptional,
+  IsString,
   Length,
   Matches,
 } from "class-validator";
@@ -133,4 +135,18 @@ export class PaginationInputModel {
   @IsEnum(SortDirectionEnum)
   @Transform(({ value }: TransformFnParams) => value?.toUpperCase())
   sortDirection: string;
+}
+
+export class QuestionCreateInputModelType {
+  @Transform(({ value }: TransformFnParams) => value?.trim())
+  @Length(10, 500)
+  body: string;
+  @IsArray()
+  @IsString({ each: true })
+  correctAnswers: string[];
+}
+
+export class QuestionPublishUpdateInputModel {
+  @IsBoolean()
+  published: true;
 }

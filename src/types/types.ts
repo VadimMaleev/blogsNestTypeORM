@@ -124,3 +124,13 @@ export enum SortDirectionEnum {
   asc = "ASC",
   desc = "DESC",
 }
+
+//Quiz
+export type QuizQuestionResponse = {
+  id: string;
+  body: string;
+  correctAnswers: string[];
+  published: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
