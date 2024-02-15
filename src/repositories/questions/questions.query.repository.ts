@@ -19,15 +19,14 @@ export class QuestionsQueryRepository {
     const sortBy: string = query.sortBy || "createdAt";
     const sortDirection = query.sortDirection || "DESC";
 
-    let filter = {};
+    let filter = { body: ILike("%" + bodySearchTerm + "%") };
+    let published = {};
+
     if (publishedStatus === "published") {
-      filter = { body: ILike("%" + bodySearchTerm + "%"), published: true };
+      published = { published: true };
     }
     if (publishedStatus === "notPublished") {
-      filter = { body: ILike("%" + bodySearchTerm + "%"), published: false };
-    }
-    if (publishedStatus === "all") {
-      filter = { body: ILike("%" + bodySearchTerm + "%") };
+      published = { published: false };
     }
 
     const questions = await this.questionRepository.find({
@@ -39,13 +38,15 @@ export class QuestionsQueryRepository {
         createdAt: true,
         updatedAt: true,
       },
-      where: filter,
+      where: { ...filter, ...published },
       order: { [sortBy]: sortDirection },
       skip: (pageNumber - 1) * pageSize,
       take: pageSize,
     });
 
-    const totalCount = await this.questionRepository.count({ where: filter });
+    const totalCount = await this.questionRepository.count({
+      where: { ...filter, ...published },
+    });
 
     return {
       pagesCount: Math.ceil(totalCount / pageSize),

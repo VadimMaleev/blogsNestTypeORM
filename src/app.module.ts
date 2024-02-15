@@ -58,6 +58,9 @@ import { QuizSAController } from "./api/sa.api/quiz/quizSAController";
 import { QuizQuestionsService } from "./application/services/quizQuestionsService";
 import { QuestionsRepository } from "./repositories/questions/questions.repository";
 import { QuestionsQueryRepository } from "./repositories/questions/questions.query.repository";
+import { Answer } from "./repositories/quiz/answer.entity";
+import { Game } from "./repositories/quiz/game.entity";
+import { QuizQuestions } from "./repositories/quiz/quiz.questions";
 
 const useCases = [
   CheckCredentialsUseCase,
@@ -86,6 +89,9 @@ const useCases = [
       LikeForComment,
       LikeForPost,
       Question,
+      Answer,
+      Game,
+      QuizQuestions,
     ]),
     CqrsModule,
     ConfigModule.forRoot(),

@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, Injectable } from "@nestjs/common";
 import {
   QuestionCreateInputModelType,
   QuestionPublishUpdateInputModel,
@@ -44,6 +44,8 @@ export class QuizQuestionsService {
   async updateQuestion(id: string, inputModel: QuestionCreateInputModelType) {
     const question = await this.questionsRepository.getQuestionById(id);
     if (!question) return false;
+    if (question.published)
+      throw new HttpException("Question was published", 400);
     return this.questionsRepository.updateQuestion(id, inputModel);
   }
 

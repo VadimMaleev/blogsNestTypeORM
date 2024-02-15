@@ -77,6 +77,7 @@ export class QuizSAController {
   }
 
   @Get()
+  @UseGuards(BasicAuthGuard)
   async findQuestions(@Query() query: QuestionsQueryDto) {
     return this.questionsQueryRepository.findQuestions(query);
   }

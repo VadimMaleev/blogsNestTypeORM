@@ -125,6 +125,17 @@ export enum SortDirectionEnum {
   desc = "DESC",
 }
 
+export enum AnswersEnum {
+  Correct = "Correct",
+  Incorrect = "Incorrect",
+}
+
+export enum GameStatusEnum {
+  PendingSecondPlayer = "PendingSecondPlayer",
+  Active = "Active",
+  Finished = "Finished",
+}
+
 //Quiz
 export type QuizQuestionResponse = {
   id: string;
