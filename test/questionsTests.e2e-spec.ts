@@ -24,7 +24,7 @@ describe("Questions Tests", () => {
   };
   const updatedValidQuestion = {
     body: "UPDATED valid question test",
-    correctAnswers: ["UPDAETED", "hello", "world"],
+    correctAnswers: ["UPDATED", "hello", "world"],
   };
 
   beforeAll(async () => {

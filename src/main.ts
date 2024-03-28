@@ -1,9 +1,9 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { BadRequestException, ValidationPipe } from '@nestjs/common';
-import { HttpExceptionFilter } from './exception.filter';
-import cookieParser from 'cookie-parser';
-import { useContainer } from 'class-validator';
+import { NestFactory } from "@nestjs/core";
+import { AppModule } from "./app.module";
+import { BadRequestException, ValidationPipe } from "@nestjs/common";
+import { HttpExceptionFilter } from "./exception.filter";
+import cookieParser from "cookie-parser";
+import { useContainer } from "class-validator";
 
 const port = process.env.PORT || 5000;
 
@@ -29,7 +29,7 @@ async function bootstrap() {
 
         throw new BadRequestException(errorsForResponse);
       },
-    }),
+    })
   );
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   app.useGlobalFilters(new HttpExceptionFilter());

@@ -113,6 +113,43 @@ export type BannedUserForBlog = {
   };
 };
 
+//Games
+export type CreatedGameResponse = {
+  id: string;
+  firstPlayerProgress: {
+    answers: AnswersType[] | [];
+    player: {
+      id: string;
+      login: string;
+    };
+    score: number;
+  };
+  secondPlayerProgress: {
+    answers: AnswersType[] | [];
+    player: {
+      id: string | null;
+      login: string | null;
+    };
+    score: number;
+  };
+  questions: QuestionsType[] | [];
+  status: GameStatusEnum;
+  pairCreatedDate: Date;
+  startGameDate: Date | null;
+  finishGameDate: Date | null;
+};
+
+export type AnswersType = {
+  questionId: string;
+  answerStatus: AnswersEnum;
+  addedAt: Date;
+};
+
+export type QuestionsType = {
+  id: string;
+  body: string;
+};
+
 //Enums
 export enum LikesStatusEnum {
   Like = "Like",

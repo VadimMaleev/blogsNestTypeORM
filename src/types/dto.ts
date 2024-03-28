@@ -1,5 +1,6 @@
 //Query
 import { PaginationInputModel } from "./input.models";
+import { GameStatusEnum } from "./types";
 
 export class BlogsQueryDto extends PaginationInputModel {
   searchNameTerm: string;
@@ -116,6 +117,22 @@ export class CreateQuestionDto {
     public published: boolean,
     public createdAt: Date,
     public updatedAt: Date
+  ) {}
+}
+
+export class CreateGameDto {
+  constructor(
+    public id: string,
+    public firstPlayerId: string,
+    public secondPlayerId: string | null,
+    public firstPlayerScore: number,
+    public secondPlayerScore: number,
+    public firstPlayerLogin: string,
+    public secondPlayerLogin: string | null,
+    public status: GameStatusEnum,
+    public pairCreatedDate: Date,
+    public startGameDate: Date | null,
+    public finishGameDate: Date | null
   ) {}
 }
 

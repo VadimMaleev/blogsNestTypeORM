@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from "uuid";
 import { QuestionsRepository } from "../../repositories/questions/questions.repository";
 
 @Injectable()
-export class QuizQuestionsService {
+export class QuestionsService {
   constructor(protected questionsRepository: QuestionsRepository) {}
 
   async createQuestion(

@@ -55,12 +55,20 @@ import { LikeForPost } from "./repositories/likes/likeForPost.entity";
 import { LikesForPostsRepository } from "./repositories/likes/likes.for.posts.repo";
 import { Question } from "./repositories/questions/question.entity";
 import { QuizSAController } from "./api/sa.api/quiz/quizSAController";
-import { QuizQuestionsService } from "./application/services/quizQuestionsService";
+import { QuestionsService } from "./application/services/questionsService";
 import { QuestionsRepository } from "./repositories/questions/questions.repository";
 import { QuestionsQueryRepository } from "./repositories/questions/questions.query.repository";
 import { Answer } from "./repositories/quiz/answer.entity";
 import { Game } from "./repositories/quiz/game.entity";
-import { QuizQuestions } from "./repositories/quiz/quiz.questions";
+import { QuizQuestions } from "./repositories/quiz/quiz.questions.entity";
+import { PairGameQuizController } from "./api/public.api/quiz.game/pair.game.quiz.controller";
+import { PairQuizGameService } from "./application/services/pair.quiz.game.service";
+import { GamesRepository } from "./repositories/quiz/games.repository";
+import { QuizQuestionsRepository } from "./repositories/quiz/quiz.questions.repository";
+import { GamesQueryRepository } from "./repositories/quiz/games-query-repository";
+import { config } from "dotenv";
+
+config();
 
 const useCases = [
   CheckCredentialsUseCase,
@@ -73,7 +81,7 @@ const useCases = [
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-      url: "postgres://VadimMaleev:Q1BS4wvXkaUo@ep-lively-night-96871029.eu-central-1.aws.neon.tech/neondb",
+      url: process.env.LOCAL,
       type: "postgres",
       ssl: true,
       autoLoadEntities: true,
@@ -114,6 +122,7 @@ const useCases = [
     BlogsSAController,
     UsersSAController,
     QuizSAController,
+    PairGameQuizController,
   ],
   providers: [
     AppService,
@@ -142,9 +151,13 @@ const useCases = [
     BannedUsersForBlogRepository,
     ExtractUserIdFromHeadersUseCase,
     BlogExistRule,
-    QuizQuestionsService,
+    QuestionsService,
     QuestionsRepository,
     QuestionsQueryRepository,
+    PairQuizGameService,
+    GamesQueryRepository,
+    GamesRepository,
+    QuizQuestionsRepository,
     ...useCases,
   ],
 })

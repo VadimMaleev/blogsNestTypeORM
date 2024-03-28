@@ -16,14 +16,14 @@ import {
   QuestionCreateInputModelType,
   QuestionPublishUpdateInputModel,
 } from "../../../types/input.models";
-import { QuizQuestionsService } from "../../../application/services/quizQuestionsService";
+import { QuestionsService } from "../../../application/services/questionsService";
 import { QuestionsQueryDto } from "../../../types/dto";
 import { QuestionsQueryRepository } from "../../../repositories/questions/questions.query.repository";
 
 @Controller("/sa/quiz/questions")
 export class QuizSAController {
   constructor(
-    protected quizQuestionsService: QuizQuestionsService,
+    protected quizQuestionsService: QuestionsService,
     protected questionsQueryRepository: QuestionsQueryRepository
   ) {}
 

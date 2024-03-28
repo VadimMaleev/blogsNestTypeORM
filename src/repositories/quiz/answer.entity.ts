@@ -1,5 +1,6 @@
-import { Column, Entity, PrimaryColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryColumn } from "typeorm";
 import { AnswersEnum } from "../../types/types";
+import { User } from "../users/user.entity";
 
 @Entity("Answer")
 export class Answer {
@@ -20,6 +21,7 @@ export class Answer {
 
   @Column({ type: "timestamp with time zone" })
   addedAt: Date;
-}
 
-//
+  @ManyToOne(() => User, (u) => u.answers)
+  user: User;
+}

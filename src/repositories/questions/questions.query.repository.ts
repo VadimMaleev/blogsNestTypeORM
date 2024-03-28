@@ -56,4 +56,16 @@ export class QuestionsQueryRepository {
       items: questions,
     };
   }
+
+  async getFiveRandomQuestionsForGame(): Promise<
+    { id: string; body: string }[]
+  > {
+    return this.questionRepository
+      .createQueryBuilder("q")
+      .select("q.id, q.body")
+      .where("q.published = :boolean", { boolean: true })
+      .orderBy("RANDOM()")
+      .take(5)
+      .getRawMany();
+  }
 }

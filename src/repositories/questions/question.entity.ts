@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
+import { QuizQuestions } from "../quiz/quiz.questions.entity";
 
 @Entity("Question")
 export class Question {
@@ -19,4 +20,7 @@ export class Question {
 
   @Column({ type: "timestamp with time zone" })
   updatedAt: Date;
+
+  @OneToMany(() => QuizQuestions, (qq) => qq.question)
+  quizQuestions: QuizQuestions[];
 }
