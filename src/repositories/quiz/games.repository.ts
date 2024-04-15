@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Game } from "./game.entity";
-import { Brackets, Repository } from "typeorm";
+import { Repository } from "typeorm";
 import { CreateGameDto } from "../../types/dto";
 import { GameStatusEnum } from "../../types/types";
 import { User } from "../users/user.entity";
@@ -26,21 +26,14 @@ export class GamesRepository {
     return this.gamesRepository
       .createQueryBuilder("g")
       .select("*")
-      .where(
-        new Brackets((qb) =>
-          qb
-            .where("g.firstPlayerId = :userId", { userId: userId })
-            .orWhere("g.secondPlayerId = :userId", { userId: userId })
-        )
-      )
-      .andWhere(
-        new Brackets((qb) =>
-          qb
-            .where("g.status = :st", { st: GameStatusEnum.PendingSecondPlayer })
-            .orWhere("g.status = :st", { st: GameStatusEnum.Active })
-        )
-      )
-      .getOne();
+      .where("(g.firstPlayerId = :playerId OR g.secondPlayerId = :playerId)", {
+        playerId: userId,
+      })
+      .andWhere("(g.status = :status1 OR g.status = :status2)", {
+        status1: GameStatusEnum.PendingSecondPlayer,
+        status2: GameStatusEnum.Active,
+      })
+      .getRawOne();
   }
 
   async addSecondPlayerAndStartGame(

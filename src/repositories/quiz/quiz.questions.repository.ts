@@ -17,4 +17,14 @@ export class QuizQuestionsRepository {
     const questionsArray = questions.map((q) => ({ gameId, questionId: q.id }));
     await this.quizQuestionsRepository.save(questionsArray);
   }
+
+  async getQuestions(gameId: string) {
+    return this.quizQuestionsRepository
+      .createQueryBuilder("qq")
+      .where("qq.gameId = :gameId", { gameId: gameId })
+      .leftJoinAndSelect("qq.question", "q")
+      .select(["q.id", "q.body"])
+      .orderBy("q.id")
+      .getRawMany();
+  }
 }

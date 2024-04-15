@@ -22,7 +22,10 @@ export const mapGameForResponse = (
     },
     score: game.secondPlayerScore,
   },
-  questions: questions,
+  questions: questions.map((q) => ({
+    id: q.q_id,
+    body: q.q_body,
+  })),
   status: game.status,
   pairCreatedDate: game.pairCreatedDate,
   startGameDate: game.startGameDate,

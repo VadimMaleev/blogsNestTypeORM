@@ -12,7 +12,6 @@ export class TestingController {
       `
       DELETE FROM public."Device";
       DELETE FROM public."RecoveryCode";
-      DELETE FROM public."Tokens";
       DELETE FROM public."LikeForComment";
       DELETE FROM public."LikeForPost";
       DELETE FROM public."Comment";

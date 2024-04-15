@@ -4,13 +4,13 @@ import {
   IsEnum,
   IsOptional,
   IsString,
+  IsUUID,
   Length,
   Matches,
 } from "class-validator";
 import { LikesStatusEnum, SortDirectionEnum } from "./types";
 import { Transform, TransformFnParams } from "class-transformer";
 import { BlogExists } from "../helpers/validator.blogId";
-
 
 export class BlogCreateInputModelType {
   @Transform(({ value }: TransformFnParams) => value?.trim())
@@ -149,4 +149,9 @@ export class QuestionCreateInputModelType {
 export class QuestionPublishUpdateInputModel {
   @IsBoolean()
   published: true;
+}
+
+export class ParameterCheckIsUUID {
+  @IsUUID()
+  id: string;
 }

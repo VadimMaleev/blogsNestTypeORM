@@ -1,10 +1,11 @@
 import {
   Controller,
+  ForbiddenException,
   Get,
   HttpCode,
-  HttpException,
   NotFoundException,
   Param,
+  ParseUUIDPipe,
   Post,
   Request,
   UseGuards,
@@ -14,27 +15,21 @@ import { PairQuizGameService } from "../../../application/services/pair.quiz.gam
 import { CreatedGameResponse } from "../../../types/types";
 import { GamesQueryRepository } from "../../../repositories/quiz/games-query-repository";
 
-@Controller("/pair-game-quiz")
+@Controller("pair-game-quiz")
 export class PairGameQuizController {
   constructor(
     protected pairGameQuizService: PairQuizGameService,
     protected gamesQueryRepository: GamesQueryRepository
   ) {}
 
-  @Get("pairs/:id")
+  @Get("pairs/my-current")
   @HttpCode(200)
   @UseGuards(JwtAuthGuard)
-  async getGameById(
-    @Param("id") id: string,
-    @Request() req
-  ): Promise<CreatedGameResponse> {
-    const game = await this.gamesQueryRepository.findGameById(id);
-    if (!game) throw new NotFoundException("Game Not Found");
-    if (
-      game.firstPlayerProgress.player.id !== req.user.id ||
-      game.secondPlayerProgress.player.id !== req.user.id
-    )
-      throw new HttpException("Not Your own", 403);
+  async getMyCurrentGame(@Request() req) {
+    const game = await this.gamesQueryRepository.findActiveGameForUser(
+      req.user.id
+    );
+    if (!game) throw new NotFoundException();
     return game;
   }
 
@@ -45,5 +40,30 @@ export class PairGameQuizController {
     const gameId: string =
       await this.pairGameQuizService.createNewPairOrStartGame(req.user);
     return this.gamesQueryRepository.findGameById(gameId);
+  }
+
+  @Post("pairs/my-current/answers")
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  async sendAnswer(@Request() req) {}
+
+  @Get("pairs/:id")
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  async getGameById(
+    @Param("id", new ParseUUIDPipe()) id: string,
+    @Request() req
+  ): Promise<CreatedGameResponse> {
+    //TODO Bad Request response to SWAGGER
+    const game = await this.gamesQueryRepository.findGameById(id);
+    if (!game) throw new NotFoundException("Game Not Found");
+
+    if (
+      game.firstPlayerProgress.player.id === req.user.id ||
+      game.secondPlayerProgress.player.id === req.user.id
+    )
+      return game;
+
+    throw new ForbiddenException("Not Your own");
   }
 }

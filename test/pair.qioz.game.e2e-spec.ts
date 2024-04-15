@@ -1,6 +1,7 @@
 import { INestApplication } from "@nestjs/common";
 import { startApp } from "./test.app.init";
 import { agent as request } from "supertest";
+import { randomUUID } from "crypto";
 
 describe("Quiz Game e2e tests", () => {
   let app: INestApplication;
@@ -13,34 +14,14 @@ describe("Quiz Game e2e tests", () => {
     await app.close();
   });
 
-  const user = {
-    login: "loginTEST",
-    email: "testingbyme@gmail.com",
-    password: "123TEST",
-  };
-
-  const loginUser = {
-    loginOrEmail: "loginTEST",
-    password: "123TEST",
-  };
+  let gameId = "";
+  let users = [];
 
   const user2 = {
-    login: "login2TEST",
-    email: "testingbymee@gmail.com",
+    login: "loginTEST",
+    email: "testing222byme@gmail.com",
     password: "123TEST",
   };
-
-  const loginUser2 = {
-    loginOrEmail: "login2TEST",
-    password: "123TEST",
-  };
-
-  let userId = "";
-  let userId2 = "";
-  let token = "";
-  let token2 = "";
-  let refreshToken = "";
-  let refreshToken2 = "";
 
   const pendingGameStab = {
     id: expect.any(String),
@@ -101,67 +82,15 @@ describe("Quiz Game e2e tests", () => {
     });
   });
 
-  describe("creating and login 2 users", () => {
-    it("should creat new user", async () => {
-      const response = await request(app.getHttpServer())
-        .post("/sa/users")
-        .send(user)
-        .set(
-          "Authorization",
-          "Basic " + Buffer.from("admin:qwerty").toString("base64")
-        );
-      userId = response.body.id;
-      expect(response).toBeDefined();
-      expect(response.status).toBe(201);
-      expect(response.body.login).toBe(user.login);
-      expect(response.body.email).toBe(user.email);
-    });
-
-    it("should creat new user 2", async () => {
-      const response = await request(app.getHttpServer())
-        .post("/sa/users")
-        .send(user2)
-        .set(
-          "Authorization",
-          "Basic " + Buffer.from("admin:qwerty").toString("base64")
-        );
-      userId2 = response.body.id;
-      expect(response).toBeDefined();
-      expect(response.status).toBe(201);
-      expect(response.body.login).toBe(user2.login);
-      expect(response.body.email).toBe(user2.email);
-    });
-
-    describe("login user", () => {
-      it("login - should return 200 status", async () => {
-        const response = await request(app.getHttpServer())
-          .post("/auth/login")
-          .send(loginUser)
-          .set("user-agent", "test");
-        token = response.body.accessToken;
-        refreshToken = response.headers["set-cookie"];
-        expect(response.status).toBe(200);
-        expect(response.body.accessToken).toBeDefined();
-      });
-    });
-
-    describe("login user2", () => {
-      it("login - should return 200 status", async () => {
-        const response = await request(app.getHttpServer())
-          .post("/auth/login")
-          .send(loginUser2)
-          .set("user-agent", "test");
-        token2 = response.body.accessToken;
-        refreshToken2 = response.headers["set-cookie"];
-        expect(response.status).toBe(200);
-        expect(response.body.accessToken).toBeDefined();
-      });
+  describe("creating and login users", () => {
+    it("should create several users", async function () {
+      users = await createAndLoginSeveralUsers(3);
     });
   });
 
   describe("creating questions", () => {
     it("should create and publish questions", async () => {
-      await createAndSaveQuestionsInDBAndPublish(10);
+      await createAndSaveQuestionsInDBAndPublish(5);
     });
   });
 
@@ -176,15 +105,33 @@ describe("Quiz Game e2e tests", () => {
     it("should return new pending game", async () => {
       const res = await request(app.getHttpServer())
         .post("/pair-game-quiz/pairs/connection")
-        .set("Authorization", "Bearer " + token);
+        .set("Authorization", "Bearer " + users[0].accessToken);
       expect(res.status).toBe(200);
       expect(res.body).toEqual(pendingGameStab);
       expect(res.body.firstPlayerProgress.player).toEqual({
-        id: userId,
-        login: user.login,
+        id: users[0].userId,
+        login: users[0].login,
       });
       expect(res.body.firstPlayerProgress.score).toBe(0);
       expect(res.body.status).toBe("PendingSecondPlayer");
+      gameId = res.body.id;
+    });
+
+    it("should return Error403 because player already in game", async function () {
+      const res = await request(app.getHttpServer())
+        .post("/pair-game-quiz/pairs/connection")
+        .set("Authorization", "Bearer " + users[0].accessToken);
+      expect(res.status).toBe(403);
+    });
+  });
+
+  describe("check current game by user", () => {
+    it("should return current game", async function () {
+      const res = await request(app.getHttpServer())
+        .get("/pair-game-quiz/pairs/my-current")
+        .set("Authorization", "Bearer " + users[0].accessToken);
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual(pendingGameStab);
     });
   });
 
@@ -192,22 +139,65 @@ describe("Quiz Game e2e tests", () => {
     it("should return active game with questions", async () => {
       const res = await request(app.getHttpServer())
         .post("/pair-game-quiz/pairs/connection")
-        .set("Authorization", "Bearer " + token2);
-      console.log(res.body);
+        .set("Authorization", "Bearer " + users[1].accessToken);
       expect(res.status).toBe(200);
       expect(res.body).toEqual(activeGameStab);
       expect(res.body.firstPlayerProgress.player).toEqual({
-        id: userId,
-        login: user.login,
+        id: users[0].userId,
+        login: users[0].login,
       });
       expect(res.body.secondPlayerProgress.player).toEqual({
-        id: userId2,
-        login: user2.login,
+        id: users[1].userId,
+        login: users[1].login,
       });
       expect(res.body.firstPlayerProgress.score).toBe(0);
       expect(res.body.secondPlayerProgress.score).toBe(0);
       expect(res.body.questions.length).toBe(5);
       expect(res.body.status).toBe("Active");
+    });
+  });
+
+  describe("check get game by ID", () => {
+    it("should return 401 error", async () => {
+      const res = await request(app.getHttpServer()).get(
+        `/pair-game-quiz/pairs/${gameId}`
+      );
+      expect(res.status).toBe(401);
+    });
+
+    it("should return 400 error", async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/pair-game-quiz/pairs/${1}`)
+        .set("Authorization", "Bearer " + users[1].accessToken);
+      console.log(res.body);
+      expect(res.status).toBe(400);
+    });
+
+    it("should return 404 error", async function () {
+      const res = await request(app.getHttpServer())
+        .get(`/pair-game-quiz/pairs/${randomUUID()}`)
+        .set("Authorization", "Bearer " + users[1].accessToken);
+      expect(res.status).toBe(404);
+    });
+
+    it("should return 403 Error", async function () {
+      const res = await request(app.getHttpServer())
+        .get(`/pair-game-quiz/pairs/${gameId}`)
+        .set("Authorization", "Bearer " + users[2].accessToken);
+      expect(res.status).toBe(403);
+    });
+
+    it("should return game", async function () {
+      const res = await request(app.getHttpServer())
+        .get(`/pair-game-quiz/pairs/${gameId}`)
+        .set("Authorization", "Bearer " + users[0].accessToken);
+      expect(res.body).toEqual(activeGameStab);
+      expect(res.body.firstPlayerProgress.player).toEqual({
+        id: users[0].userId,
+        login: users[0].login,
+      });
+      expect(res.body.status).toBe("Active");
+      expect(res.status).toBe(200);
     });
   });
 
@@ -237,5 +227,39 @@ describe("Quiz Game e2e tests", () => {
       }
     }
     return;
+  };
+
+  const createAndLoginSeveralUsers = async (
+    count: number
+  ): Promise<{ accessToken: string; userId: string }[]> => {
+    const users = [];
+    for (let i = 0; i < count; i++) {
+      const user = await request(app.getHttpServer())
+        .post("/sa/users")
+        .send({
+          ...user2,
+          login: user2.login + i,
+          email: `email@emai${i}l.com`,
+        })
+        .set(
+          "Authorization",
+          "Basic " + Buffer.from("admin:qwerty").toString("base64")
+        );
+      users.push(user.body);
+    }
+    const tokens = [];
+
+    for (const user of users) {
+      const response = await request(app.getHttpServer())
+        .post("/auth/login")
+        .send({ loginOrEmail: user.login, password: user2.password })
+        .set("user-agent", "test");
+      tokens.push({
+        accessToken: response.body.accessToken,
+        userId: user.id,
+        login: user.login,
+      });
+    }
+    return tokens;
   };
 });
